@@ -45,7 +45,7 @@ repositories {
     maven("https://repo.oraxen.com/releases")
     // PlaceholderAPI
     maven("https://repo.extendedclip.com/releases")
-    // ItemsAdder, SCore, ShopGUIPlus, Slimefun4, Vault
+    // ItemsAdder, SCore, ShopGUIPlus, Slimefun4, Vault, ZShop
     maven("https://jitpack.io/")
     // PlayerPoints
     maven("https://repo.rosewooddev.io/repository/public/")
