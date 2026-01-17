@@ -140,6 +140,9 @@ dependencies {
     // ZNPCsPlus
     compileOnlyPlugin("lol.pyr:znpcsplus-api:2.0.0-SNAPSHOT")
 
+    // ModeledNPCs$
+    compileOnlyPlugin("com.github.el211:ModeledNPCS-API:7.7b")
+
     // IridiumSkyblock, PyroFishingPro, uSkyBlock
     compileOnlyLibs("libs", listOf("*.jar"))
 

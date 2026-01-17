@@ -499,6 +499,8 @@ public class BukkitQuestsPlugin extends JavaPlugin implements Quests {
             taskTypeManager.registerTaskType(() -> new ZShopSellTaskType(this), () -> CompatUtils.isPluginEnabled("ZShop"));
             taskTypeManager.registerTaskType(() -> new RegionEnterTaskType(this), () -> CompatUtils.isPluginEnabled("WorldGuardEvents"));
 
+            taskTypeManager.registerTaskType(() -> new ModeledNPCClickTaskType(this), () -> CompatUtils.isPluginEnabled("ModeledNPCS"));
+
             // Register task types with enabled specific version plugin compatibility requirement
             taskTypeManager.registerTaskType(() -> new IridiumSkyblockValueTaskType(this), () -> { // TODO FIX
                 String pluginVersion = CompatUtils.getPluginVersion("IridiumSkyblock");
