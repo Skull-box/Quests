@@ -13,6 +13,7 @@ tasks.withType<ProcessResources> {
 }
 
 repositories {
+    mavenLocal()
     // Paper
     maven("https://repo.papermc.io/repository/maven-public/")
     // Paper (adventure-bom snapshots)
@@ -59,6 +60,9 @@ repositories {
     maven("https://repo.bg-software.com/repository/api/")
     // ZNPCsPlus
     maven("https://repo.pyr.lol/snapshots")
+
+    maven("https://repo.lanink.cn/repository/maven-public/")
+
 
     // bungeecord-chat, HikariCP, hppc, JetBrains Annotations, slf4j
     mavenCentral()
@@ -141,7 +145,20 @@ dependencies {
     compileOnlyPlugin("lol.pyr:znpcsplus-api:2.0.0-SNAPSHOT")
 
     // ModeledNPCs$
-    compileOnlyPlugin("com.github.el211:ModeledNPCS-API:7.7b")
+    compileOnlyPlugin("com.github.el211:ModeledNPCS-API:v7.9.1")
+
+    compileOnly("cn.superiormc.ultimateshop:plugin:4.2.12")
+
+    // SkullboxUtils
+    compileOnly("fr.skullbox:SkullboxUtils:1.0-SNAPSHOT")
+    // SkullboxEssentials
+    compileOnly("fr.skullbox:SkullboxEssentials:1.0-SNAPSHOT")
+    // SkullboxTreasure
+    compileOnly("fr.skullbox:SkullboxTreasure:1.0-SNAPSHOT")
+    // SkullboxCrystals
+    compileOnly("fr.skullbox:SkullboxCrystals:1.0-SNAPSHOT")
+    // Boxed Core
+    compileOnly("com.example:boxed-core:1.0.0")
 
     // IridiumSkyblock, PyroFishingPro, uSkyBlock
     compileOnlyLibs("libs", listOf("*.jar"))

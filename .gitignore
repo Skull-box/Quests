@@ -24,4 +24,5 @@ UPDATE_MESSAGE
 *.classpath
 *.project
 */bin/
-*.settings/
+*.settings/.DS_Store
+deploy.config

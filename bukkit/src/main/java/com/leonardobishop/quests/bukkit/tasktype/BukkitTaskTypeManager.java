@@ -63,6 +63,7 @@ public final class BukkitTaskTypeManager extends TaskTypeManager {
         if (super.registerTaskType(taskType)) {
             bukkitTaskType.taskTypeManager = this;
             this.plugin.getServer().getPluginManager().registerEvents(bukkitTaskType, this.plugin);
+            this.plugin.getLogger().info("Registered task type: " + taskType.getType());
             return true;
         }
 

@@ -17,7 +17,7 @@ public class RegionEnterTaskType extends BukkitTaskType {
     private final BukkitQuestsPlugin plugin;
 
     public RegionEnterTaskType(BukkitQuestsPlugin plugin) {
-        super( "region_enter", "DotDebian", "Purchase a given item from a ZShop shop");
+        super( "region_enter", "DotDebian", "Task completed when a player enters a WorldGuard region.");
         this.plugin = plugin;
 
         super.addConfigValidator(TaskUtils.useRequiredConfigValidator(this, "name"));
@@ -36,10 +36,10 @@ public class RegionEnterTaskType extends BukkitTaskType {
             Task task = pendingTask.task();
             TaskProgress taskProgress = pendingTask.taskProgress();
 
-            super.debug("Player entered region (region = " + event.getRegion() + ")", quest.getId(), task.getId(), player.getUniqueId());
+            super.debug("Player entered region (region = " + event.getRegionName() + ")", quest.getId(), task.getId(), player.getUniqueId());
 
             String taskRegionName = (String) task.getConfigValue("name");
-            if (taskRegionName != null && !taskRegionName.equals(event.getRegion())) {
+            if (taskRegionName != null && !taskRegionName.equals(event.getRegionName())) {
                 super.debug("Region name does not match required name, continuing...", quest.getId(), task.getId(), player.getUniqueId());
                 continue;
             }

@@ -65,6 +65,7 @@ import com.leonardobishop.quests.bukkit.scheduler.folia.FoliaServerScheduler;
 import com.leonardobishop.quests.bukkit.storage.ModernMySQLStorageProvider;
 import com.leonardobishop.quests.bukkit.storage.ModernYAMLStorageProvider;
 import com.leonardobishop.quests.bukkit.tasktype.BukkitTaskTypeManager;
+import com.leonardobishop.quests.bukkit.tasktype.type.AnvilTaskType;
 import com.leonardobishop.quests.bukkit.tasktype.type.BarteringTaskType;
 import com.leonardobishop.quests.bukkit.tasktype.type.BlockItemdroppingTaskType;
 import com.leonardobishop.quests.bukkit.tasktype.type.BlockfertilizingTaskType;
@@ -414,6 +415,7 @@ public class BukkitQuestsPlugin extends JavaPlugin implements Quests {
             }
 
             // Register task types without compatibility requirement
+            taskTypeManager.registerTaskType(new AnvilTaskType(this));
             taskTypeManager.registerTaskType(new BreedingTaskType(this));
             taskTypeManager.registerTaskType(new BucketEmptyTaskType(this));
             taskTypeManager.registerTaskType(new BucketFillTaskType(this));
@@ -495,11 +497,32 @@ public class BukkitQuestsPlugin extends JavaPlugin implements Quests {
             taskTypeManager.registerTaskType(() -> new ZNPCsPlusDeliverTaskType(this), () -> CompatUtils.isPluginEnabled("ZNPCsPlus"));
             taskTypeManager.registerTaskType(() -> new ZNPCsPlusInteractTaskType(this), () -> CompatUtils.isPluginEnabled("ZNPCsPlus"));
 
-            taskTypeManager.registerTaskType(() -> new ZShopBuyTaskType(this), () -> CompatUtils.isPluginEnabled("ZShop"));
-            taskTypeManager.registerTaskType(() -> new ZShopSellTaskType(this), () -> CompatUtils.isPluginEnabled("ZShop"));
+            //taskTypeManager.registerTaskType(() -> new ZShopBuyTaskType(this), () -> CompatUtils.isPluginEnabled("ZShop"));
+            //taskTypeManager.registerTaskType(() -> new ZShopSellTaskType(this), () -> CompatUtils.isPluginEnabled("ZShop"));
             taskTypeManager.registerTaskType(() -> new RegionEnterTaskType(this), () -> CompatUtils.isPluginEnabled("WorldGuardEvents"));
 
+            taskTypeManager.registerTaskType(() -> new CustomBlockBreakTaskType(this), () -> CompatUtils.isPluginEnabled("ItemsAdder"));
+            taskTypeManager.registerTaskType(() -> new CustomSmithingTaskType(this), () -> CompatUtils.isPluginEnabled("ItemsAdder") && CompatUtils.isPluginEnabled("SkullboxEssentials"));
+
             taskTypeManager.registerTaskType(() -> new ModeledNPCClickTaskType(this), () -> CompatUtils.isPluginEnabled("ModeledNPCS"));
+            taskTypeManager.registerTaskType(() -> new ModeledNPCDeliverTaskType(this), () -> CompatUtils.isPluginEnabled("ModeledNPCS"));
+
+            taskTypeManager.registerTaskType(() -> new VegetationBreakTaskType(this), () -> CompatUtils.isPluginEnabled("SkullboxUtils"));
+
+            taskTypeManager.registerTaskType(() -> new MachineResultPickTaskType(this), () -> CompatUtils.isPluginEnabled("SkullboxEssentials"));
+
+            taskTypeManager.registerTaskType(CompatUtils.isPluginEnabled("SkullboxTreasure") ? new TreasureOpenTaskType(this) : new TreasureOpenFallbackTaskType(this));
+
+            taskTypeManager.registerTaskType(CompatUtils.isPluginEnabled("SkullboxCrystals") ? new CrystalBreakTaskType(this) : new CrystalBreakFallbackTaskType(this));
+
+            taskTypeManager.registerTaskType(() -> new BankDepositTaskType(this), () -> CompatUtils.isPluginEnabled("BoxedSpawn") || CompatUtils.isPluginEnabled("BoxedIsland"));
+            taskTypeManager.registerTaskType(() -> new IslandLevelUpTaskType(this), () -> CompatUtils.isPluginEnabled("BoxedSpawn") || CompatUtils.isPluginEnabled("BoxedIsland"));
+
+            if (CompatUtils.isPluginEnabled("UltimateShop")) {
+                getLogger().info("UltimateShop is detected, adding zshop_sell and zshop_buy quest types.");
+                taskTypeManager.registerTaskType(() -> new UltimateShopBuyTaskType(this), () -> CompatUtils.isPluginEnabled("UltimateShop"));
+                taskTypeManager.registerTaskType(() -> new UltimateShopSellTaskType(this), () -> CompatUtils.isPluginEnabled("UltimateShop"));
+            }
 
             // Register task types with enabled specific version plugin compatibility requirement
             taskTypeManager.registerTaskType(() -> new IridiumSkyblockValueTaskType(this), () -> { // TODO FIX

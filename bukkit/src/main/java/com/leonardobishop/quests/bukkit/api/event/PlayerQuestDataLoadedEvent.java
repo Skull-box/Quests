@@ -5,18 +5,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
-public class PlayerStopTrackQuestEvent extends PlayerQuestEvent {
+public class PlayerQuestDataLoadedEvent extends PlayerQuestEvent {
 
     private final static HandlerList handlers = new HandlerList();
-    private final QPlayer qPlayer;
 
-    public PlayerStopTrackQuestEvent(@NotNull Player who, QPlayer qPlayer) {
-        super(who, qPlayer);
-        this.qPlayer = qPlayer;
-    }
-
-    public QPlayer getQPlayer() {
-        return qPlayer;
+    public PlayerQuestDataLoadedEvent(@NotNull Player who, @NotNull QPlayer questPlayer) {
+        super(who, questPlayer);
     }
 
     @NotNull

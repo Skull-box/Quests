@@ -8,24 +8,24 @@ import com.leonardobishop.quests.common.player.QPlayer;
 import com.leonardobishop.quests.common.player.questprogressfile.TaskProgress;
 import com.leonardobishop.quests.common.quest.Quest;
 import com.leonardobishop.quests.common.quest.Task;
-import fr.elias.npcs.events.NPCInteractEvent;
+import fr.skullbox.treasure.listeners.TreasureOpenEvent;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 
-public class ModeledNPCClickTaskType extends BukkitTaskType {
+public final class TreasureOpenTaskType extends BukkitTaskType {
 
     private final BukkitQuestsPlugin plugin;
 
-    public ModeledNPCClickTaskType(BukkitQuestsPlugin plugin) {
-        super( "modelednpc_interact", "DotDebian", "Task completed when a player interacts with a modeled NPC.");
+    public TreasureOpenTaskType(BukkitQuestsPlugin plugin) {
+        super("treasure_open", "DotDebian", "Open a certain amount of treasure chests.");
         this.plugin = plugin;
 
-        super.addConfigValidator(TaskUtils.useRequiredConfigValidator(this, "npc-id"));
+        super.addConfigValidator(TaskUtils.useIntegerConfigValidator(this, "amount"));
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onModeledNPCClick(NPCInteractEvent event) {
+    public void onTreasureOpen(TreasureOpenEvent event) {
         Player player = event.getPlayer();
         QPlayer qPlayer = plugin.getPlayerManager().getPlayer(player.getUniqueId());
         if (qPlayer == null) {
@@ -37,16 +37,23 @@ public class ModeledNPCClickTaskType extends BukkitTaskType {
             Task task = pendingTask.task();
             TaskProgress taskProgress = pendingTask.taskProgress();
 
-            final int taskNpcId = (int) task.getConfigValue("npc-id");
-            if (taskNpcId != event.getNPCData().getId()) {
-                continue;
+            super.debug("Player opened a treasure chest", quest.getId(), task.getId(), player.getUniqueId());
+
+            int amountNeeded = (int) task.getConfigValue("amount", 1);
+
+            int progress = TaskUtils.getIntegerTaskProgress(taskProgress);
+            int newProgress = progress + 1;
+            taskProgress.setProgress(newProgress);
+
+            super.debug("Updating task progress (now " + newProgress + ")", quest.getId(), task.getId(), player.getUniqueId());
+
+            if (newProgress >= amountNeeded) {
+                super.debug("Marking task as complete", quest.getId(), task.getId(), player.getUniqueId());
+                taskProgress.setProgress(amountNeeded);
+                taskProgress.setCompleted(true);
             }
 
-            taskProgress.setProgress(1);
-            taskProgress.setCompleted(true);
-
-            TaskUtils.sendTrackAdvancement(player, quest, task, pendingTask, 1);
+            TaskUtils.sendTrackAdvancement(player, quest, task, pendingTask, amountNeeded);
         }
     }
-
 }

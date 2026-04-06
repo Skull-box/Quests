@@ -22,6 +22,7 @@ softdepend:
 - FabledSkyBlock
 - FancyNpcs
 - IridiumSkyblock
+- ItemsAdder
 - MythicMobs
 - Nexo
 - Oraxen
@@ -39,6 +40,14 @@ softdepend:
 - VotingPlugin
 - WildStacker
 - ZNPCsPlus
+- ModeledNPCS
+- UltimateShop
+- SkullboxUtils
+- SkullboxEssentials
+- SkullboxTreasure
+- SkullboxCrystals
+- BoxedSpawn
+- BoxedIsland
 prefix: Quests
 api-version: "1.13" # allows new API features but Quests will still work pre-1.13
 folia-supported: true

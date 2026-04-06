@@ -1,8 +1,10 @@
 package com.leonardobishop.quests.bukkit.listener;
 
 import com.leonardobishop.quests.bukkit.BukkitQuestsPlugin;
+import com.leonardobishop.quests.bukkit.api.event.PlayerQuestDataLoadedEvent;
 import com.leonardobishop.quests.bukkit.util.Messages;
 import com.leonardobishop.quests.common.quest.Quest;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -20,14 +22,6 @@ public class PlayerJoinListener implements Listener {
     public void onEvent(PlayerJoinEvent event) {
         if (plugin.getDescription().getVersion().contains("beta") && event.getPlayer().hasPermission("quests.admin")) {
             Messages.BETA_REMINDER.send(event.getPlayer());
-        }
-        if (plugin.getUpdater().isUpdateReady() && event.getPlayer().hasPermission("quests.admin")) {
-            // delay for a bit so they actually see the message
-            String updateMessage = Messages.QUEST_UPDATER.getMessageLegacyColor()
-                    .replace("{newver}", plugin.getUpdater().getReturnedVersion())
-                    .replace("{oldver}", plugin.getUpdater().getInstalledVersion())
-                    .replace("{link}", plugin.getUpdater().getUpdateLink());
-            plugin.getScheduler().runTaskLaterAtEntity(event.getPlayer(), () -> event.getPlayer().sendMessage(updateMessage), 50L);
         }
 
         final Player player = event.getPlayer();
@@ -49,6 +43,8 @@ public class PlayerJoinListener implements Listener {
                             }
                         }
                     }
+
+                    Bukkit.getPluginManager().callEvent(new PlayerQuestDataLoadedEvent(player, qPlayer));
                 });
             });
         }, plugin.getQuestsConfig().getInt("options.storage.synchronisation.delay-loading", 0));
