@@ -12,8 +12,38 @@ tasks.withType<ProcessResources> {
     }
 }
 
+// Lecture des GitHub Packages d'AUTRES dépôts de l'org (SNAPSHOT mobiles republiés par leur CI) :
+//  - CI : secret PACKAGES_READ_TOKEN exposé en variable d'environnement (le GITHUB_TOKEN d'un run ne lit que
+//    les paquets de son propre dépôt) ;
+//  - local : jeton read:packages dans la variable d'environnement PACKAGES_READ_TOKEN, ou dans
+//    ~/.gradle/gradle.properties (gpr.user / gpr.key). Voir README, « Compiler en local ».
+val packagesUser = (findProperty("gpr.user") as String?) ?: System.getenv("GITHUB_ACTOR") ?: System.getenv("USER")
+val packagesToken = (findProperty("gpr.key") as String?) ?: System.getenv("PACKAGES_READ_TOKEN")
+
+// Registre d'un dépôt de l'org, limité au groupe indiqué et aux SNAPSHOT : le jeton n'est envoyé qu'à ce registre,
+// pour ce que lui seul fournit. Le groupe entier (et non le seul module) : le pom parent d'un module est lu au même endroit.
+fun RepositoryHandler.skullboxPackages(repo: String, group: String) {
+    maven {
+        name = "github-${repo.lowercase()}"
+        url = uri("https://maven.pkg.github.com/Skull-box/$repo")
+        credentials {
+            username = packagesUser
+            password = packagesToken
+        }
+        mavenContent {
+            includeGroup(group)
+            snapshotsOnly()
+        }
+    }
+}
+
+// Un SNAPSHOT mobile change à chaque publication : pas de cache de 24 h sur ses métadonnées.
+configurations.configureEach {
+    resolutionStrategy.cacheChangingModulesFor(0, "seconds")
+}
+
 repositories {
-    mavenLocal()
+    // Pas de mavenLocal() : il masquerait les registres ci-dessous.
     // Paper
     maven("https://repo.papermc.io/repository/maven-public/")
     // Paper (adventure-bom snapshots)
@@ -60,6 +90,14 @@ repositories {
     maven("https://repo.pyr.lol/snapshots")
 
     maven("https://repo.lanink.cn/repository/maven-public/")
+
+    // SkullboxUtils, SkullboxEssentials, SkullboxTreasure, SkullboxCrystals : un registre par dépôt.
+    skullboxPackages("SkullboxUtils", "fr.skullbox")
+    skullboxPackages("SkullboxEssentials", "fr.skullbox")
+    skullboxPackages("SkullboxTreasure", "fr.skullbox")
+    skullboxPackages("SkullboxCrystals", "fr.skullbox")
+    // boxed-core : publié par BoxedPlugin (branche main) en SNAPSHOT mobile.
+    skullboxPackages("BoxedPlugin", "com.example")
 
 
     // bungeecord-chat, HikariCP, hppc, JetBrains Annotations, slf4j
@@ -145,16 +183,15 @@ dependencies {
 
     compileOnly("cn.superiormc.ultimateshop:plugin:4.2.12")
 
-    // SkullboxUtils
-    compileOnly("fr.skullbox:SkullboxUtils:1.0-SNAPSHOT")
-    // SkullboxEssentials
-    compileOnly("fr.skullbox:SkullboxEssentials:1.0-SNAPSHOT")
-    // SkullboxTreasure
-    compileOnly("fr.skullbox:SkullboxTreasure:1.0-SNAPSHOT")
-    // SkullboxCrystals
-    compileOnly("fr.skullbox:SkullboxCrystals:1.0-SNAPSHOT")
-    // Boxed Core
-    compileOnly("com.example:boxed-core:1.0.0")
+    // SkullboxUtils, SkullboxEssentials, SkullboxTreasure, SkullboxCrystals : SNAPSHOT mobiles, artifactId en
+    // minuscules (GitHub Packages refuse les majuscules). Jars seuls, sans leurs dépendances.
+    compileOnlyPlugin("fr.skullbox:skullboxutils:1.0-SNAPSHOT")
+    compileOnlyPlugin("fr.skullbox:skullboxessentials:1.0-SNAPSHOT")
+    compileOnlyPlugin("fr.skullbox:skullboxtreasure:1.0-SNAPSHOT")
+    compileOnlyPlugin("fr.skullbox:skullboxcrystals:1.0-SNAPSHOT")
+    // Boxed Core (TeamAPI, Team, IslandLevelUpEvent, BankTransactionEvent) : SNAPSHOT mobile de BoxedPlugin,
+    // pom sans dépendances.
+    compileOnlyPlugin("com.example:boxed-core:1.0.0-SNAPSHOT")
 
     // IridiumSkyblock, PyroFishingPro, uSkyBlock
     compileOnlyLibs("libs", listOf("*.jar"))
