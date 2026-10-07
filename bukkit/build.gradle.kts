@@ -40,8 +40,6 @@ repositories {
     maven("https://mvn.lumine.io/repository/maven-public/")
     // Nexo
     maven("https://repo.nexomc.com/releases")
-    // NuVotifier
-    maven("https://repo.leonardobishop.com/releases/")
     // Oraxen
     maven("https://repo.oraxen.com/releases")
     // PlaceholderAPI
@@ -117,8 +115,6 @@ dependencies {
     compileOnlyPlugin("io.lumine:Mythic-Dist:5.2.0")
     // Nexo
     compileOnlyPlugin("com.nexomc:nexo:1.1.0")
-    // NuVotifier
-    compileOnlyPlugin("com.vexsoftware:NuVotifier:2.7.3")
     // Oraxen
     compileOnlyPlugin("io.th0rgal:oraxen:1.175.0")
     // PlaceholderAPI

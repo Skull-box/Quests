@@ -492,7 +492,6 @@ public class BukkitQuestsPlugin extends JavaPlugin implements Quests {
             taskTypeManager.registerTaskType(() -> new SuperiorSkyblockLevelType(this), () -> CompatUtils.isPluginEnabled("SuperiorSkyblock2")); // not tested
             taskTypeManager.registerTaskType(() -> new SuperiorSkyblockWorthType(this), () -> CompatUtils.isPluginEnabled("SuperiorSkyblock2")); // not tested
             taskTypeManager.registerTaskType(() -> new uSkyBlockLevelTaskType(this), () -> CompatUtils.isPluginEnabled("uSkyBlock"));
-            taskTypeManager.registerTaskType(() -> new NuVotifierVoteTaskType(this), () -> CompatUtils.isPluginEnabled("Votifier")); // not tested
             taskTypeManager.registerTaskType(() -> new VotingPluginVoteType(this), () -> CompatUtils.isPluginEnabled("VotingPlugin")); // not tested
             taskTypeManager.registerTaskType(() -> new ZNPCsPlusDeliverTaskType(this), () -> CompatUtils.isPluginEnabled("ZNPCsPlus"));
             taskTypeManager.registerTaskType(() -> new ZNPCsPlusInteractTaskType(this), () -> CompatUtils.isPluginEnabled("ZNPCsPlus"));
