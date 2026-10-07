@@ -11,7 +11,10 @@ allprojects {
     apply(plugin = "java")
 
     group = "com.leonardobishop"
-    version = "3.15.2"
+    // La CI injecte la version de release avec -PreleaseVersion=x.y.z (build.sh) et neutralise le suffixe du hash de
+    // commit (allJar) avec -Pgitversion=false : le jar et plugin.yml portent alors exactement cette version.
+    // Sans propriété : 3.15.2 (suffixé du hash, comme en amont).
+    version = findProperty("releaseVersion") ?: "3.15.2"
 
     java {
         toolchain {
@@ -150,16 +153,16 @@ publishing {
     }
 
     repositories {
-        maven("https://repo.leonardobishop.com/releases/") {
+        // SNAPSHOT mobile com.leonardobishop:quests:3.15.2-SNAPSHOT sur les GitHub Packages de CE dépôt
+        // (publish-snapshot.sh, à chaque push sur master). Un seul artefact : le jar du plugin (allJar), sans
+        // dépendances dans le pom. Identifiants par l'environnement (MAVEN_USERNAME / MAVEN_TOKEN).
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/Skull-box/Quests")
             credentials {
-                username = findPropertyString("mavenUser") ?: System.getenv("MAVEN_USER")
-                password = findPropertyString("mavenPassword") ?: System.getenv("MAVEN_PASSWORD")
+                username = System.getenv("MAVEN_USERNAME")
+                password = System.getenv("MAVEN_TOKEN")
             }
         }
     }
-}
-
-fun findPropertyString(propertyName: String): String? {
-    val propertyValue = project.findProperty(propertyName)
-    return if (propertyValue is String) propertyValue else null
 }
