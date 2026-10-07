@@ -26,3 +26,7 @@ UPDATE_MESSAGE
 */bin/
 *.settings/.DS_Store
 deploy.config
+
+# CI : état de semantic-release et plugins installés à la volée
+.release-version
+node_modules/
