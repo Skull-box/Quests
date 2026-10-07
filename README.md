@@ -89,3 +89,41 @@ Please speak English and do not use any vulgar or harmful language. We work on t
 The **source code** for Quests is licensed under the GNU General Public License v3.0, to view the license click [here](https://github.com/LMBishop/Quests/blob/master/LICENSE.txt).
 
 The **artwork** for Quests is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License ![](https://i.creativecommons.org/l/by-nc-sa/4.0/80x15.png), to learn more click [here](https://creativecommons.org/licenses/by-nc-sa/4.0/).
+
+
+## Compiler en local (fork Skull-box)
+
+Fork du réseau Skullbox, maintenu avec ses intégrations maison. Prérequis : JDK 21 (le wrapper Gradle est dans le
+dépôt). **Un jeton GitHub est nécessaire** : quatre plugins du réseau (`skullboxutils`, `skullboxessentials`,
+`skullboxtreasure`, `skullboxcrystals`) et `boxed-core` ne sont lisibles que depuis les GitHub Packages de l'org
+Skull-box (SNAPSHOT mobiles, republiés par la CI de leurs dépôts). Jeton avec le droit `read:packages`
+(`gh auth refresh -s read:packages`), dans la variable d'environnement `PACKAGES_READ_TOKEN` (ou `gpr.user` /
+`gpr.key` dans `~/.gradle/gradle.properties`). Ne le commitez jamais.
+
+```bash
+export PACKAGES_READ_TOKEN=$(gh auth token)   # ou un jeton personnel read:packages
+./gradlew clean build -Pgitversion=false
+```
+
+Le jar du plugin est `build/libs/Quests-3.15.2.jar` (`quests-3.15.2.jar`, minuscules, est le jar vide du projet
+racine). `-PreleaseVersion=x.y.z` remplace la version de `build.gradle.kts`, et le jar comme `plugin.yml` la portent.
+Sans `-Pgitversion=false`, le build garde le comportement de l'amont : la version est suffixée du hash de commit
+(`Quests-3.15.2-<hash>.jar`).
+
+Le type de tâche `nuvotifier_vote` a été retiré du fork : sa dépendance (`com.vexsoftware:NuVotifier`) n'existe plus
+sur aucun dépôt Maven.
+
+## CI/CD (Skull-box)
+
+Fichiers : `.github/workflows/ci.yml`, `.github/scripts/`, `.releaserc.json`. Runner `blacksmith-2vcpu-ubuntu-2404`, JDK 21.
+
+- **Chaque push et PR** : `./gradlew clean build` (tests compris). Une PR ne publie rien.
+- **Push sur `master`** : release GitHub par [semantic-release](https://github.com/semantic-release/semantic-release)
+  (`feat:` = mineure, `fix:` = correctif, `feat!:` ou `BREAKING CHANGE` = majeure ; `ci:`, `build:`, `docs:`, `chore:`,
+  `refactor:` ne produisent aucune release). La Release porte `Quests-<version>.jar`, sans suffixe de hash. La première
+  Release (`v3.15.2`) a été créée d'après la version de `build.gradle.kts`.
+- **Push sur `master`, aussi** : le jar du plugin est publié en SNAPSHOT mobile `com.leonardobishop:quests:3.15.2-SNAPSHOT`
+  sur `https://maven.pkg.github.com/Skull-box/Quests` (pom sans dépendances ; lu par SkullboxUtils). Élagage : au 10e
+  dépôt du SNAPSHOT le paquet est supprimé puis republié (~1,4 Mo par publication, 14 Mo au plus).
+- **Toute autre branche** : prérelease GitHub glissante `build-<branche>` (titre = nom de la branche), écrasée à
+  chaque push, supprimée avec la branche.
