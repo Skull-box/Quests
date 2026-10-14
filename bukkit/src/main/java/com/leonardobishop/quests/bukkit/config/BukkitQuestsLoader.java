@@ -5,7 +5,6 @@ import com.leonardobishop.quests.bukkit.hook.itemgetter.ItemGetter;
 import com.leonardobishop.quests.bukkit.item.CustomFishingQuestItem;
 import com.leonardobishop.quests.bukkit.item.EvenMoreFishQuestItem;
 import com.leonardobishop.quests.bukkit.item.ExecutableItemsQuestItem;
-import com.leonardobishop.quests.bukkit.item.ItemsAdderQuestItem;
 import com.leonardobishop.quests.bukkit.item.MMOItemsQuestItem;
 import com.leonardobishop.quests.bukkit.item.NexoQuestItem;
 import com.leonardobishop.quests.bukkit.item.OraxenQuestItem;
@@ -504,10 +503,6 @@ public class BukkitQuestsLoader implements QuestsLoader {
                         case "executableitems":
                             if (!Bukkit.getPluginManager().isPluginEnabled("ExecutableItems")) return FileVisitResult.CONTINUE;
                             item = new ExecutableItemsQuestItem(id, config.getString("item.id"));
-                            break;
-                        case "itemsadder":
-                            if (!Bukkit.getPluginManager().isPluginEnabled("ItemsAdder")) return FileVisitResult.CONTINUE;
-                            item = new ItemsAdderQuestItem(id, config.getString("item.id"));
                             break;
                         case "oraxen":
                             if (!Bukkit.getPluginManager().isPluginEnabled("Oraxen")) return FileVisitResult.CONTINUE;

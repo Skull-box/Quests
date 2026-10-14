@@ -9,7 +9,7 @@ import com.leonardobishop.quests.common.player.QPlayer;
 import com.leonardobishop.quests.common.player.questprogressfile.TaskProgress;
 import com.leonardobishop.quests.common.quest.Quest;
 import com.leonardobishop.quests.common.quest.Task;
-import dev.lone.itemsadder.api.CustomStack;
+import com.nexomc.nexo.api.NexoItems;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.inventory.ItemStack;
@@ -37,8 +37,8 @@ public class UltimateShopSellTaskType extends BukkitTaskType {
 
         int amountSold = event.getAmount();
         final ItemStack itemStack = event.getItem().getDisplayItem(event.getPlayer());
-        CustomStack customStack = CustomStack.byItemStack(itemStack);
-        String itemId = customStack != null ? customStack.getNamespacedID() : itemStack.getType().name();
+        String nexoId = NexoItems.idFromItem(itemStack);
+        String itemId = nexoId != null ? nexoId : itemStack.getType().name();
 
         for (TaskUtils.PendingTask pendingTask : TaskUtils.getApplicableTasks(player, qPlayer, this, TaskConstraintSet.ALL)) {
             Quest quest = pendingTask.quest();

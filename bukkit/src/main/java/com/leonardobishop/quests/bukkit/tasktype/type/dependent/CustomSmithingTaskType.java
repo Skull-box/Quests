@@ -8,7 +8,7 @@ import com.leonardobishop.quests.common.player.QPlayer;
 import com.leonardobishop.quests.common.player.questprogressfile.TaskProgress;
 import com.leonardobishop.quests.common.quest.Quest;
 import com.leonardobishop.quests.common.quest.Task;
-import dev.lone.itemsadder.api.CustomStack;
+import com.nexomc.nexo.api.NexoItems;
 import fr.skullbox.skullboxEssentials.module.runes.CustomSmithItemEvent;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -24,7 +24,7 @@ public final class CustomSmithingTaskType extends BukkitTaskType {
     private final BukkitQuestsPlugin plugin;
 
     public CustomSmithingTaskType(BukkitQuestsPlugin plugin) {
-        super("custom_smithing", TaskUtils.TASK_ATTRIBUTION_STRING, "Smith an item with specific input items (supports ItemsAdder and vanilla).");
+        super("custom_smithing", TaskUtils.TASK_ATTRIBUTION_STRING, "Smith an item with specific input items (supports Nexo and vanilla).");
         this.plugin = plugin;
 
         super.addConfigValidator(TaskUtils.useIntegerConfigValidator(this, "amount"));
@@ -110,8 +110,7 @@ public final class CustomSmithingTaskType extends BukkitTaskType {
 
         String vanillaId = "minecraft:" + item.getType().name().toLowerCase(Locale.ROOT);
 
-        CustomStack customStack = CustomStack.byItemStack(item);
-        String customId = customStack != null ? customStack.getNamespacedID() : null;
+        String customId = NexoItems.idFromItem(item);
 
         for (Object obj : allowedIds) {
             String id = obj.toString();
@@ -130,9 +129,9 @@ public final class CustomSmithingTaskType extends BukkitTaskType {
         if (item == null || item.getType() == Material.AIR) {
             return "empty";
         }
-        CustomStack customStack = CustomStack.byItemStack(item);
-        if (customStack != null) {
-            return customStack.getNamespacedID();
+        String customId = NexoItems.idFromItem(item);
+        if (customId != null) {
+            return customId;
         }
         return "minecraft:" + item.getType().name().toLowerCase(Locale.ROOT);
     }

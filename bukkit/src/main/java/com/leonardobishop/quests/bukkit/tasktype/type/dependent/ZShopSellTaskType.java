@@ -8,7 +8,7 @@ import com.leonardobishop.quests.common.player.QPlayer;
 import com.leonardobishop.quests.common.player.questprogressfile.TaskProgress;
 import com.leonardobishop.quests.common.quest.Quest;
 import com.leonardobishop.quests.common.quest.Task;
-import dev.lone.itemsadder.api.CustomStack;
+import com.nexomc.nexo.api.NexoItems;
 import fr.maxlego08.shop.api.event.ShopAction;
 import fr.maxlego08.shop.api.event.events.ZShopSellAllEvent;
 import fr.maxlego08.shop.api.event.events.ZShopSellEvent;
@@ -36,8 +36,8 @@ public class ZShopSellTaskType extends BukkitTaskType {
         }
 
         int amountSold = event.getAmount();
-        CustomStack customStack = CustomStack.byItemStack(event.getItemStack());
-        String itemId = customStack != null ? customStack.getNamespacedID() : event.getItemStack().getType().name();
+        String nexoId = NexoItems.idFromItem(event.getItemStack());
+        String itemId = nexoId != null ? nexoId : event.getItemStack().getType().name();
 
         handle(player, qPlayer, itemId, amountSold);
     }
@@ -51,8 +51,8 @@ public class ZShopSellTaskType extends BukkitTaskType {
         }
 
         for (ShopAction shopAction : event.getShopActions()) {
-            CustomStack customStack = CustomStack.byItemStack(shopAction.getItemStack());
-            String itemId = customStack != null ? customStack.getNamespacedID() : shopAction.getItemStack().getType().name();
+            String nexoId = NexoItems.idFromItem(shopAction.getItemStack());
+            String itemId = nexoId != null ? nexoId : shopAction.getItemStack().getType().name();
             handle(player, qPlayer, itemId, shopAction.getItemStack().getAmount());
         }
     }

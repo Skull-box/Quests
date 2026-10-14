@@ -8,7 +8,7 @@ import com.leonardobishop.quests.common.player.QPlayer;
 import com.leonardobishop.quests.common.player.questprogressfile.TaskProgress;
 import com.leonardobishop.quests.common.quest.Quest;
 import com.leonardobishop.quests.common.quest.Task;
-import dev.lone.itemsadder.api.CustomStack;
+import com.nexomc.nexo.api.NexoItems;
 import fr.maxlego08.shop.api.event.events.ZShopBuyEvent;
 import net.brcdev.shopgui.shop.Shop;
 import org.bukkit.entity.Player;
@@ -39,8 +39,8 @@ public class ZShopBuyTaskType extends BukkitTaskType {
         }
 
         int amountBought = event.getAmount();
-        CustomStack customStack = CustomStack.byItemStack(event.getItemStack());
-        String itemId = customStack != null ? customStack.getNamespacedID() : event.getItemStack().getType().name();
+        String nexoId = NexoItems.idFromItem(event.getItemStack());
+        String itemId = nexoId != null ? nexoId : event.getItemStack().getType().name();
 
         for (TaskUtils.PendingTask pendingTask : TaskUtils.getApplicableTasks(player, qPlayer, this, TaskConstraintSet.ALL)) {
             Quest quest = pendingTask.quest();

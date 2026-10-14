@@ -500,8 +500,8 @@ public class BukkitQuestsPlugin extends JavaPlugin implements Quests {
             //taskTypeManager.registerTaskType(() -> new ZShopSellTaskType(this), () -> CompatUtils.isPluginEnabled("ZShop"));
             taskTypeManager.registerTaskType(() -> new RegionEnterTaskType(this), () -> CompatUtils.isPluginEnabled("WorldGuardEvents"));
 
-            taskTypeManager.registerTaskType(() -> new CustomBlockBreakTaskType(this), () -> CompatUtils.isPluginEnabled("ItemsAdder"));
-            taskTypeManager.registerTaskType(() -> new CustomSmithingTaskType(this), () -> CompatUtils.isPluginEnabled("ItemsAdder") && CompatUtils.isPluginEnabled("SkullboxEssentials"));
+            taskTypeManager.registerTaskType(() -> new CustomBlockBreakTaskType(this), () -> CompatUtils.isPluginEnabled("Nexo"));
+            taskTypeManager.registerTaskType(() -> new CustomSmithingTaskType(this), () -> CompatUtils.isPluginEnabled("Nexo") && CompatUtils.isPluginEnabled("SkullboxEssentials"));
 
             taskTypeManager.registerTaskType(() -> new ModeledNPCClickTaskType(this), () -> CompatUtils.isPluginEnabled("ModeledNPCS"));
             taskTypeManager.registerTaskType(() -> new ModeledNPCDeliverTaskType(this), () -> CompatUtils.isPluginEnabled("ModeledNPCS"));

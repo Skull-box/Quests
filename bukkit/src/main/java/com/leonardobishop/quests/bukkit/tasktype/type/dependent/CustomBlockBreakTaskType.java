@@ -8,12 +8,11 @@ import com.leonardobishop.quests.common.player.QPlayer;
 import com.leonardobishop.quests.common.player.questprogressfile.TaskProgress;
 import com.leonardobishop.quests.common.quest.Quest;
 import com.leonardobishop.quests.common.quest.Task;
-import dev.lone.itemsadder.api.CustomBlock;
+import com.nexomc.nexo.api.events.custom_block.NexoBlockBreakEvent;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
@@ -30,10 +29,12 @@ public final class CustomBlockBreakTaskType extends BukkitTaskType {
         super.addConfigValidator(TaskUtils.useIntegerConfigValidator(this, "amount"));
     }
 
+    // Événement de Nexo (blocs note, string et chorus) : au MONITOR du BlockBreakEvent, Nexo a déjà retiré
+    // le bloc custom, qui n'est plus reconnaissable. Les meubles (furniture) ne sont pas des blocs custom.
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onBlockBreak(BlockBreakEvent event) {
+    public void onBlockBreak(NexoBlockBreakEvent event) {
         Player player = event.getPlayer();
-        if (player.hasMetadata("NPC")) {
+        if (player == null || player.hasMetadata("NPC")) {
             return;
         }
 
@@ -42,12 +43,7 @@ public final class CustomBlockBreakTaskType extends BukkitTaskType {
             return;
         }
 
-        CustomBlock customBlock = CustomBlock.byAlreadyPlaced(event.getBlock());
-        if (customBlock == null) {
-            return;
-        }
-
-        String blockId = customBlock.getNamespacedID();
+        String blockId = event.getMechanic().getItemID();
 
         QPlayer qPlayer = plugin.getPlayerManager().getPlayer(player.getUniqueId());
         if (qPlayer == null) {

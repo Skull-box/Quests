@@ -74,7 +74,7 @@ repositories {
     maven("https://repo.oraxen.com/releases")
     // PlaceholderAPI
     maven("https://repo.extendedclip.com/releases")
-    // ItemsAdder, SCore, ShopGUIPlus, Slimefun4, Vault, ZShop
+    // SCore, ShopGUIPlus, Slimefun4, Vault, ZShop
     maven("https://jitpack.io/")
     // PlayerPoints
     maven("https://repo.rosewooddev.io/repository/public/")
@@ -139,8 +139,6 @@ dependencies {
     compileOnlyPlugin("de.oliver:FancyNpcs:2.5.1")
     // IridiumSkyblock TODO fix whenever repo is up
     //compileOnlyPlugin("com.github.Iridium-Development:IridiumSkyblock:master-SNAPSHOT")
-    // ItemsAdder
-    compileOnlyPlugin("com.github.LoneDev6:API-ItemsAdder:3.5.0b")
     // JetBrains Annotations
     compileOnlyPlugin("org.jetbrains:annotations:26.0.2")
     // MMOItems
@@ -152,7 +150,7 @@ dependencies {
     // MythicMobs 5
     compileOnlyPlugin("io.lumine:Mythic-Dist:5.2.0")
     // Nexo
-    compileOnlyPlugin("com.nexomc:nexo:1.1.0")
+    compileOnlyPlugin("com.nexomc:nexo:1.29.1")
     // Oraxen
     compileOnlyPlugin("io.th0rgal:oraxen:1.175.0")
     // PlaceholderAPI

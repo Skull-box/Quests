@@ -1,6 +1,7 @@
 package com.leonardobishop.quests.bukkit.item;
 
 import com.nexomc.nexo.api.NexoItems;
+import com.nexomc.nexo.items.ItemBuilder;
 import org.bukkit.inventory.ItemStack;
 
 public class NexoQuestItem extends QuestItem {
@@ -14,7 +15,8 @@ public class NexoQuestItem extends QuestItem {
 
     @Override
     public ItemStack getItemStack() {
-        return NexoItems.itemFromId(this.nexoId).build();
+        ItemBuilder builder = NexoItems.itemFromId(this.nexoId);
+        return builder != null ? builder.build() : null;
     }
 
     @Override
