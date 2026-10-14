@@ -1,6 +1,8 @@
 name: CI
 
-# Build (tests compris) à chaque push et PR.
+# Build (tests compris) à chaque push et PR. Mêmes fichiers sur master et v2.
+#  - v2 : préversion « beta » semantic-release (tag v<x.y.z>-beta.N, Release en prerelease avec le jar). Rien
+#    n'est publié sur GitHub Packages depuis v2, et pas de release initiale.
 #  - branche par défaut (master) : release stable semantic-release (tag v<version>, Release avec le jar
 #    Quests-<version>.jar, celui du plugin déployé). La version calculée est injectée dans le build du
 #    runner (-PreleaseVersion, build.sh) : jamais de commit de retour. Les commits ci:/build:/docs:/chore: ne
@@ -25,10 +27,10 @@ permissions:
   packages: write   # SNAPSHOT quests, et suppression du paquet à élaguer
 
 # Une exécution par ref. Un événement delete partage le groupe de la branche supprimée : il annule un
-# build en cours de cette branche. On n'annule jamais une exécution de la branche par défaut (release).
+# build en cours de cette branche. On n'annule jamais une exécution de release (master, v2).
 concurrency:
   group: ci-${{ github.event_name == 'delete' && format('refs/heads/{0}', github.event.ref) || github.ref }}
-  cancel-in-progress: ${{ github.event_name != 'push' || github.ref != format('refs/heads/{0}', github.event.repository.default_branch) }}
+  cancel-in-progress: ${{ github.event_name != 'push' || (github.ref != format('refs/heads/{0}', github.event.repository.default_branch) && github.ref != 'refs/heads/v2') }}
 
 jobs:
   build:
@@ -39,7 +41,9 @@ jobs:
       # BoxedPlugin (boxed-core) sont publiés sur les GitHub Packages d'autres dépôts, que le GITHUB_TOKEN d'un run
       # ne lit pas. Le dépôt est public : le secret n'est jamais affiché (masqué par GitHub), ni écrit dans un fichier.
       PACKAGES_READ_TOKEN: ${{ secrets.PACKAGES_READ_TOKEN }}
-      IS_RELEASE_BRANCH: ${{ github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+      IS_RELEASE_BRANCH: ${{ github.event_name == 'push' && (github.ref == format('refs/heads/{0}', github.event.repository.default_branch) || github.ref == 'refs/heads/v2') }}
+      # Release initiale et publication Maven : branche par défaut uniquement (pas v2).
+      IS_DEFAULT_BRANCH: ${{ github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -81,7 +85,7 @@ jobs:
       # Aucun tag v* : première Release d'après la version du build (v3.15.2 pour la version 3.15.2 de build.gradle.kts). Sinon no-op.
       - name: Release initiale (aucun tag v*)
         id: initial
-        if: env.IS_RELEASE_BRANCH == 'true'
+        if: env.IS_DEFAULT_BRANCH == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SHA: ${{ github.sha }}
@@ -94,7 +98,7 @@ jobs:
 
       # semantic-release calcule la version ; son prepareCmd lance le build avec cette version (un build
       # rouge empêche donc la release). Sans release due, rien n'est construit ici : l'étape Build s'en charge.
-      - name: semantic-release (master)
+      - name: semantic-release (master stable, v2 beta)
         id: semrel
         if: env.IS_RELEASE_BRANCH == 'true' && steps.initial.outputs.released != 'true'
         env:
@@ -124,7 +128,7 @@ jobs:
       # Le build de release a injecté une version par -PreleaseVersion : le script publie, lui, <version committée>-SNAPSHOT.
       # SNAPSHOT_MAX = floor(20 Mo / taille d'une publication, ~1,4 Mo : jar de 1,41 Mo, floor(20 / 1,41) = 14), plafonné à 10.
       - name: Publier le SNAPSHOT mobile (jar du plugin Quests) et élaguer
-        if: env.IS_RELEASE_BRANCH == 'true'
+        if: env.IS_DEFAULT_BRANCH == 'true'
         run: bash .github/scripts/publish-snapshot.sh
         env:
           SNAPSHOT_MAX: '10'
