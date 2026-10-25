@@ -59,6 +59,23 @@ jobs:
           java-version: '21'
           cache: gradle
 
+      # Le cache de setup-java (cache gradle) n'est restauré que si les fichiers de build n'ont pas changé : sinon chaque build
+      # retélécharge les paquets de l'org depuis GitHub Packages, et ce transfert épuise le quota mensuel de
+      # l'org (offre Free : 404 « data transfer out quota has been exceeded » le 24/10/2026). Ce cache-ci ne
+      # porte que sur ces paquets et repart toujours du dernier enregistré (restore-keys) : Gradle ne
+      # retélécharge que les SNAPSHOT plus récents. Clé renouvelée chaque mois, pour ne pas garder sans fin les
+      # anciens SNAPSHOT horodatés.
+      - name: Mois courant (clé du cache des paquets de l'org)
+        id: mois
+        run: echo "mois=$(date -u +%Y%m)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache des paquets de l'org (GitHub Packages)
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle/caches/modules-2/files-2.1/fr.skullbox
+          key: org-packages-gradle-${{ runner.os }}-${{ steps.mois.outputs.mois }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: org-packages-gradle-${{ runner.os }}-${{ steps.mois.outputs.mois }}-
+
       - name: Node 22 (semantic-release)
         if: env.IS_RELEASE_BRANCH == 'true'
         uses: actions/setup-node@v4
