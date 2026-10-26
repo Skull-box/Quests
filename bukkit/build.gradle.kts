@@ -12,30 +12,12 @@ tasks.withType<ProcessResources> {
     }
 }
 
-// Lecture des GitHub Packages d'AUTRES dépôts de l'org (SNAPSHOT mobiles republiés par leur CI) :
-//  - CI : secret PACKAGES_READ_TOKEN exposé en variable d'environnement (le GITHUB_TOKEN d'un run ne lit que
-//    les paquets de son propre dépôt) ;
-//  - local : jeton read:packages dans la variable d'environnement PACKAGES_READ_TOKEN, ou dans
-//    ~/.gradle/gradle.properties (gpr.user / gpr.key). Voir README, « Compiler en local ».
-val packagesUser = (findProperty("gpr.user") as String?) ?: System.getenv("GITHUB_ACTOR") ?: System.getenv("USER")
-val packagesToken = (findProperty("gpr.key") as String?) ?: System.getenv("PACKAGES_READ_TOKEN")
-
-// Registre d'un dépôt de l'org, limité au groupe indiqué et aux SNAPSHOT : le jeton n'est envoyé qu'à ce registre,
-// pour ce que lui seul fournit. Le groupe entier (et non le seul module) : le pom parent d'un module est lu au même endroit.
-fun RepositoryHandler.skullboxPackages(repo: String, group: String) {
-    maven {
-        name = "github-${repo.lowercase()}"
-        url = uri("https://maven.pkg.github.com/Skull-box/$repo")
-        credentials {
-            username = packagesUser
-            password = packagesToken
-        }
-        mavenContent {
-            includeGroup(group)
-            snapshotsOnly()
-        }
-    }
-}
+// Lecture du dépôt Maven privé de l'org, Reposilite (https://maven.skullbox.fr, aucune lecture anonyme) :
+//  - CI : secrets de dépôt MAVEN_READ_USER / MAVEN_READ_TOKEN, exposés en MAVEN_USERNAME / MAVEN_TOKEN ;
+//  - local : jeton de lecture dans ~/.gradle/gradle.properties (skullbox.user / skullbox.token), ou dans les
+//    variables d'environnement MAVEN_USERNAME / MAVEN_TOKEN. Voir README, « Compiler en local ».
+val reposiliteUser = (findProperty("skullbox.user") as String?) ?: System.getenv("MAVEN_USERNAME")
+val reposiliteToken = (findProperty("skullbox.token") as String?) ?: System.getenv("MAVEN_TOKEN")
 
 // Un SNAPSHOT mobile change à chaque publication : pas de cache de 24 h sur ses métadonnées.
 configurations.configureEach {
@@ -43,7 +25,7 @@ configurations.configureEach {
 }
 
 repositories {
-    // Pas de mavenLocal() : il masquerait les registres ci-dessous.
+    // Pas de mavenLocal() : il masquerait le dépôt skullbox-snapshots ci-dessous.
     // Paper
     maven("https://repo.papermc.io/repository/maven-public/")
     // Paper (adventure-bom snapshots)
@@ -91,13 +73,23 @@ repositories {
 
     maven("https://repo.lanink.cn/repository/maven-public/")
 
-    // SkullboxUtils, SkullboxEssentials, SkullboxTreasure, SkullboxCrystals : un registre par dépôt.
-    skullboxPackages("SkullboxUtils", "fr.skullbox")
-    skullboxPackages("SkullboxEssentials", "fr.skullbox")
-    skullboxPackages("SkullboxTreasure", "fr.skullbox")
-    skullboxPackages("SkullboxCrystals", "fr.skullbox")
-    // boxed-core : publié par BoxedPlugin (branche main) en SNAPSHOT mobile.
-    skullboxPackages("BoxedPlugin", "com.example")
+    // SkullboxUtils, SkullboxEssentials, SkullboxTreasure, SkullboxCrystals (fr.skullbox) et boxed-core, publié par
+    // BoxedPlugin (branche main, com.example) : SNAPSHOT mobiles republiés par la CI de leurs dépôts. Limité à ces
+    // groupes et aux SNAPSHOT : le jeton n'est envoyé qu'à ce dépôt, pour ce que lui seul fournit. Le groupe entier
+    // (et non le seul module) : le pom parent d'un module est lu au même endroit.
+    maven {
+        name = "skullbox-snapshots"
+        url = uri("https://maven.skullbox.fr/snapshots")
+        credentials {
+            username = reposiliteUser
+            password = reposiliteToken
+        }
+        mavenContent {
+            includeGroup("fr.skullbox")
+            includeGroup("com.example")
+            snapshotsOnly()
+        }
+    }
 
 
     // bungeecord-chat, HikariCP, hppc, JetBrains Annotations, slf4j
@@ -182,7 +174,7 @@ dependencies {
     compileOnly("cn.superiormc.ultimateshop:plugin:4.2.12")
 
     // SkullboxUtils, SkullboxEssentials, SkullboxTreasure, SkullboxCrystals : SNAPSHOT mobiles, artifactId en
-    // minuscules (GitHub Packages refuse les majuscules). Jars seuls, sans leurs dépendances.
+    // minuscules (hérité de GitHub Packages, qui refusait les majuscules). Jars seuls, sans leurs dépendances.
     compileOnlyPlugin("fr.skullbox:skullboxutils:1.0-SNAPSHOT")
     compileOnlyPlugin("fr.skullbox:skullboxessentials:1.0-SNAPSHOT")
     compileOnlyPlugin("fr.skullbox:skullboxtreasure:1.0-SNAPSHOT")

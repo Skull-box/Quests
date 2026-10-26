@@ -153,12 +153,12 @@ publishing {
     }
 
     repositories {
-        // SNAPSHOT mobile com.leonardobishop:quests:3.15.2-SNAPSHOT sur les GitHub Packages de CE dépôt
+        // SNAPSHOT mobile com.leonardobishop:quests:3.15.2-SNAPSHOT sur Reposilite
         // (publish-snapshot.sh, à chaque push sur master). Un seul artefact : le jar du plugin (allJar), sans
         // dépendances dans le pom. Identifiants par l'environnement (MAVEN_USERNAME / MAVEN_TOKEN).
         maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/Skull-box/Quests")
+            name = "Reposilite"
+            url = uri("https://maven.skullbox.fr/snapshots")
             credentials {
                 username = System.getenv("MAVEN_USERNAME")
                 password = System.getenv("MAVEN_TOKEN")

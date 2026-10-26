@@ -94,14 +94,20 @@ The **artwork** for Quests is licensed under the Creative Commons Attribution-No
 ## Compiler en local (fork Skull-box)
 
 Fork du réseau Skullbox, maintenu avec ses intégrations maison. Prérequis : JDK 21 (le wrapper Gradle est dans le
-dépôt). **Un jeton GitHub est nécessaire** : quatre plugins du réseau (`skullboxutils`, `skullboxessentials`,
-`skullboxtreasure`, `skullboxcrystals`) et `boxed-core` ne sont lisibles que depuis les GitHub Packages de l'org
-Skull-box (SNAPSHOT mobiles, republiés par la CI de leurs dépôts). Jeton avec le droit `read:packages`
-(`gh auth refresh -s read:packages`), dans la variable d'environnement `PACKAGES_READ_TOKEN` (ou `gpr.user` /
-`gpr.key` dans `~/.gradle/gradle.properties`). Ne le commitez jamais.
+dépôt). **Un jeton de lecture est nécessaire** : quatre plugins du réseau (`skullboxutils`, `skullboxessentials`,
+`skullboxtreasure`, `skullboxcrystals`) et `boxed-core` sont des SNAPSHOT mobiles (republiés par la CI de leurs
+dépôts) lus sur le dépôt Maven privé de l'org, Reposilite (`https://maven.skullbox.fr`, aucune lecture anonyme). Le
+jeton de lecture est à demander à un admin de l'org et se fournit **hors du dépôt**. Ne le commitez jamais.
 
 ```bash
-export PACKAGES_READ_TOKEN=$(gh auth token)   # ou un jeton personnel read:packages
+# soit dans ~/.gradle/gradle.properties
+#   skullbox.user=ci-read
+#   skullbox.token=JETON_DE_LECTURE
+
+# soit par l'environnement (rien n'est écrit sur disque)
+export MAVEN_USERNAME=ci-read
+export MAVEN_TOKEN=JETON_DE_LECTURE
+
 ./gradlew clean build -Pgitversion=false
 ```
 
@@ -123,7 +129,7 @@ Fichiers : `.github/workflows/ci.yml`, `.github/scripts/`, `.releaserc.json`. Ru
   `refactor:` ne produisent aucune release). La Release porte `Quests-<version>.jar`, sans suffixe de hash. La première
   Release (`v3.15.2`) a été créée d'après la version de `build.gradle.kts`.
 - **Push sur `master`, aussi** : le jar du plugin est publié en SNAPSHOT mobile `com.leonardobishop:quests:3.15.2-SNAPSHOT`
-  sur `https://maven.pkg.github.com/Skull-box/Quests` (pom sans dépendances ; lu par SkullboxUtils). Élagage : au 10e
-  dépôt du SNAPSHOT le paquet est supprimé puis republié (~1,4 Mo par publication, 14 Mo au plus).
+  sur `https://maven.skullbox.fr/snapshots` (pom sans dépendances ; lu par SkullboxUtils). Reposilite ne garde que le
+  dernier build.
 - **Toute autre branche** : prérelease GitHub glissante `build-<branche>` (titre = nom de la branche), écrasée à
   chaque push, supprimée avec la branche.
