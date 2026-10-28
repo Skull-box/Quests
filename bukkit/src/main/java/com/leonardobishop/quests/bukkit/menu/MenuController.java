@@ -61,11 +61,16 @@ public class MenuController implements Listener {
             if (menuElement == null) {
                 return;
             }
+            long soundsBefore = SoundUtils.getPlayCount();
             ClickResult result = menuElement.handleClick(player, event.getClick());
             if (result == ClickResult.DO_NOTHING) {
                 return;
             }
-            SoundUtils.playSoundForPlayer(player, plugin.getQuestsConfig().getString("options.sounds.gui.interact"));
+            // One sound per gesture: the click sound is skipped if the click already played one
+            // (menu opened, quest started or cancelled...).
+            if (SoundUtils.getPlayCount() == soundsBefore) {
+                SoundUtils.playSoundForPlayer(player, plugin.getQuestsConfig().getString("options.sounds.gui.interact"));
+            }
             if (result == ClickResult.REFRESH_PANE) {
                 player.openInventory(qMenu.draw());
                 tracker.put(player.getUniqueId(), qMenu);

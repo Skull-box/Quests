@@ -81,13 +81,15 @@ options:
     daily-quests: "Daily Quests"
     quest-cancel: "Cancel Quest"
   # See https://quests.leonardobishop.com/configuration/basic-options.html#sounds
+  # Format: NAME:PITCH:VOLUME[:CATEGORY] or (namespace:id):PITCH:VOLUME[:CATEGORY]. CATEGORY is optional (MASTER
+  # if absent). Skullbox sounds are in the VOICE category (the "Voice/Speech" slider; UI category only exists from 1.21.6).
   sounds:
-    quest-start: "ENTITY_PLAYER_LEVELUP:2:3"
-    quest-cancel: "UI_TOAST_OUT:2:3"
-    quest-complete: "UI_TOAST_CHALLENGE_COMPLETE:1.25:3"
+    quest-start: "(skullbox:quest.accept):1:0.55:VOICE"
+    quest-cancel: "(skullbox:ui.cancel):1:0.5:VOICE"
+    quest-complete: "(skullbox:reward.success):1:0.6:VOICE"
     gui:
-      open: "ITEM_BOOK_PAGE_TURN:1:3"
-      interact: ""
+      open: "(skullbox:ui.book):1:0.5:VOICE"
+      interact: "(skullbox:ui.click):1:0.35:VOICE"
   # Hide locked quests, quests on cooldown and completed (but not repeatable) quests
   gui-hide-locked: false
   # Confirm quest cancellation with a separate menu

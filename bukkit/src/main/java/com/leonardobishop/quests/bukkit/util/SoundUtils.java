@@ -1,17 +1,22 @@
 package com.leonardobishop.quests.bukkit.util;
 
 import org.bukkit.Sound;
+import org.bukkit.SoundCategory;
 import org.bukkit.entity.Player;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class SoundUtils {
 
     private static final Map<String, Sound> soundCache = new HashMap<>();
     private static final Method soundValueOfMethod;
+    /** Number of sounds actually sent so far (see {@link #getPlayCount()}). */
+    private static final AtomicLong playCount = new AtomicLong();
 
     static {
         try {
@@ -22,10 +27,22 @@ public class SoundUtils {
     }
 
     /**
+     * Number of sounds sent by {@link #playSoundForPlayer(Player, String)} so far. Compare it before and after an
+     * action to know whether the action already played a sound ("one sound per gesture").
+     */
+    public static long getPlayCount() {
+        return playCount.get();
+    }
+
+    /**
      * Play a sound to a player
      *
      * @param soundString the sound string as formatted by a user in the config, e.g. ENTITY_PLAYER_LEVELUP:2:3
-     *                    or namespaced, e.g (minecraft:block.decorated_pot.step):2:3
+     *                    or namespaced, e.g (minecraft:block.decorated_pot.step):2:3.
+     *                    An optional fourth field gives the sound category (a {@link SoundCategory} name, which is
+     *                    the volume slider the player sees), e.g. (skullbox:ui.book):1:0.5:VOICE or
+     *                    ENTITY_PLAYER_LEVELUP:2:3:VOICE. Without it, or if it is not a valid category, the sound
+     *                    plays in MASTER as before.
      */
     public static void playSoundForPlayer(Player player, String soundString) {
         if (soundString == null || soundString.isEmpty()) {
@@ -35,12 +52,13 @@ public class SoundUtils {
         String[] parts = soundString.split(":");
         boolean namespaced = parts.length >= 2 && parts[0].startsWith("(") && parts[1].endsWith(")");
 
-        // (namespace:key):pitch:volume
-        // 0          1    2     3
-        // ENTITY_PLAYER_LEVELUP:2:3
-        // 0                     1 2
+        // (namespace:key):pitch:volume:category
+        // 0          1    2     3      4
+        // ENTITY_PLAYER_LEVELUP:2:3:category
+        // 0                     1 2 3
         int pitchIndex = namespaced ? 2 : 1;
         int volumeIndex = pitchIndex + 1;
+        int categoryIndex = volumeIndex + 1;
 
         float pitch = 1.0f;
         if (parts.length >= pitchIndex + 1) {
@@ -58,13 +76,23 @@ public class SoundUtils {
             }
         }
 
+        // MASTER unless the config says otherwise (existing configs keep their behaviour)
+        SoundCategory category = SoundCategory.MASTER;
+        if (parts.length >= categoryIndex + 1) {
+            try {
+                category = SoundCategory.valueOf(parts[categoryIndex].trim().toUpperCase(Locale.ROOT));
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
+
         if (namespaced) {
             // 0123456789
             // (space:id)
             // (space - length 6
             // id) - length 3
             String sound = soundString.substring(1, parts[0].length() + parts[1].length());
-            player.playSound(player.getLocation(), sound, volume, pitch);
+            player.playSound(player.getLocation(), sound, category, volume, pitch);
+            playCount.incrementAndGet();
             return;
         }
 
@@ -86,6 +114,7 @@ public class SoundUtils {
             return;
         }
 
-        player.playSound(player.getLocation(), sound, volume, pitch);
+        player.playSound(player.getLocation(), sound, category, volume, pitch);
+        playCount.incrementAndGet();
     }
 }
