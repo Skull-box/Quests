@@ -35,6 +35,17 @@ public class SoundUtils {
     }
 
     /**
+     * Play a menu-opening sound ({@code options.sounds.gui.open}), unless the player is navigating: if they just
+     * clicked in a menu (any plugin), the button played its own click sound and the menu it opens stays silent.
+     * The opening sound is only for a menu opened directly (command, item, NPC).
+     */
+    public static void playOpeningSoundForPlayer(Player player, String soundString) {
+        if (!MenuNavigation.isNavigating(player)) {
+            playSoundForPlayer(player, soundString);
+        }
+    }
+
+    /**
      * Play a sound to a player
      *
      * @param soundString the sound string as formatted by a user in the config, e.g. ENTITY_PLAYER_LEVELUP:2:3

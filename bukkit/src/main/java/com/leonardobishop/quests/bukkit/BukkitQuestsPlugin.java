@@ -373,6 +373,7 @@ public class BukkitQuestsPlugin extends JavaPlugin implements Quests {
 
         // Register events
         super.getServer().getPluginManager().registerEvents(new PlayerJoinListener(this), this);
+        super.getServer().getPluginManager().registerEvents(new com.leonardobishop.quests.bukkit.util.MenuNavigation(), this);
         super.getServer().getPluginManager().registerEvents(menuController, this);
         super.getServer().getPluginManager().registerEvents(new PlayerLeaveListener(this), this);
 

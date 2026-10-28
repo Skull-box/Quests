@@ -19,6 +19,8 @@ public class MenuController implements Listener {
 
     private final HashMap<UUID, QMenu> tracker = new HashMap<>();
     private final BukkitQuestsPlugin plugin;
+    /** Set by {@link #openMenu(HumanEntity, QMenu)}; read by onClick to know whether a button led to another menu. */
+    private boolean openedDuringClick;
 
     public MenuController(BukkitQuestsPlugin plugin) {
         this.plugin = plugin;
@@ -34,7 +36,10 @@ public class MenuController implements Listener {
     }
 
     public void openMenu(HumanEntity player, QMenu qMenu) {
-        SoundUtils.playSoundForPlayer((Player) player, plugin.getQuestsConfig().getString("options.sounds.gui.open"));
+        // Opening sound only when the menu is opened directly; a menu reached by a click stays silent, the
+        // clicked button plays the click sound (see onClick).
+        openedDuringClick = true;
+        SoundUtils.playOpeningSoundForPlayer((Player) player, plugin.getQuestsConfig().getString("options.sounds.gui.open"));
 //        Bukkit.getScheduler().runTaskLater(plugin, () -> SoundUtils.playSoundForPlayer((Player) player, plugin.getQuestsConfig().getString("options.sounds.gui.open")), 1L);
         player.openInventory(qMenu.draw());
         tracker.put(player.getUniqueId(), qMenu);
@@ -62,12 +67,15 @@ public class MenuController implements Listener {
                 return;
             }
             long soundsBefore = SoundUtils.getPlayCount();
+            openedDuringClick = false;
             ClickResult result = menuElement.handleClick(player, event.getClick());
-            if (result == ClickResult.DO_NOTHING) {
+            // A button that opens another menu (category, back, cancel confirmation...) returns DO_NOTHING but is
+            // not mute: it plays the click sound, the menu it opens plays nothing.
+            if (result == ClickResult.DO_NOTHING && !openedDuringClick) {
                 return;
             }
             // One sound per gesture: the click sound is skipped if the click already played one
-            // (menu opened, quest started or cancelled...).
+            // (quest started or cancelled...).
             if (SoundUtils.getPlayCount() == soundsBefore) {
                 SoundUtils.playSoundForPlayer(player, plugin.getQuestsConfig().getString("options.sounds.gui.interact"));
             }
