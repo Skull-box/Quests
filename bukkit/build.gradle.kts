@@ -109,7 +109,7 @@ dependencies {
     compileOnlyProject(":common")
 
     // Paper
-    compileOnlyServer("io.papermc.paper:paper-api:26.1.1.build.29-alpha")
+    compileOnlyServer("io.papermc.paper:paper-api:26.2.build.134-stable")
 
     // ASkyBlock
     compileOnlyPlugin("com.wasteofplastic:askyblock:3.0.9.4")
