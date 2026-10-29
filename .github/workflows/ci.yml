@@ -1,8 +1,11 @@
 name: CI
 
-# Build (tests compris) à chaque push et PR. Mêmes fichiers sur master et v2.
-#  - v2 : préversion « beta » semantic-release (tag v<x.y.z>-beta.N, Release en prerelease avec le jar). Rien
-#    n'est publié sur Reposilite depuis v2, et pas de release initiale.
+# Build (tests compris) à chaque push et PR. Fichier propre à v2 pour la publication de v2-SNAPSHOT (master ne
+# publie que 3.15.2-SNAPSHOT).
+#  - v2 : préversion « beta » semantic-release (tag v<x.y.z>-beta.N, Release en prerelease avec le jar), pas de
+#    release initiale. Chaque push sur v2 republie aussi le SNAPSHOT mobile com.leonardobishop:quests:v2-SNAPSHOT
+#    (jar du plugin, pom sans dépendances) sur Reposilite : SkullboxUtils et SkullboxTreasure (branches v2) le
+#    lisent, distinct du 3.15.2-SNAPSHOT de master (code V1).
 #  - branche par défaut (master) : release stable semantic-release (tag v<version>, Release avec le jar
 #    Quests-<version>.jar, celui du plugin déployé). La version calculée est injectée dans le build du
 #    runner (-PreleaseVersion, build.sh) : jamais de commit de retour. Les commits ci:/build:/docs:/chore: ne
@@ -41,8 +44,10 @@ jobs:
       MAVEN_USERNAME: ${{ secrets.MAVEN_READ_USER }}
       MAVEN_TOKEN: ${{ secrets.MAVEN_READ_TOKEN }}
       IS_RELEASE_BRANCH: ${{ github.event_name == 'push' && (github.ref == format('refs/heads/{0}', github.event.repository.default_branch) || github.ref == 'refs/heads/v2') }}
-      # Release initiale et publication Maven : branche par défaut uniquement (pas v2).
+      # Release initiale et SNAPSHOT 3.15.2-SNAPSHOT : branche par défaut uniquement (pas v2).
       IS_DEFAULT_BRANCH: ${{ github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+      # SNAPSHOT mobile v2-SNAPSHOT : branche v2 uniquement.
+      IS_V2_BRANCH: ${{ github.event_name == 'push' && github.ref == 'refs/heads/v2' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -51,11 +56,11 @@ jobs:
 
       # Gradle n'utilise pas settings.xml : pas de server-id, les identifiants passent par l'environnement
       # (MAVEN_USERNAME / MAVEN_TOKEN : jeton de lecture pour le job, d'écriture pour la publication).
-      - name: JDK 21 (Temurin) + cache Gradle
+      - name: JDK 25 (Temurin) + cache Gradle
         uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: '25'
           cache: gradle
 
       - name: Node 22 (semantic-release)
@@ -128,6 +133,14 @@ jobs:
       - name: Publier le SNAPSHOT mobile (jar du plugin Quests)
         if: env.IS_DEFAULT_BRANCH == 'true'
         run: bash .github/scripts/publish-snapshot.sh
+        env:
+          MAVEN_USERNAME: ${{ secrets.MAVEN_WRITE_USER }}
+          MAVEN_TOKEN: ${{ secrets.MAVEN_WRITE_TOKEN }}
+
+      # Branche v2 : SNAPSHOT mobile distinct et stable v2-SNAPSHOT (même mécanique, version passée en argument).
+      - name: Publier le SNAPSHOT mobile v2-SNAPSHOT (jar du plugin Quests)
+        if: env.IS_V2_BRANCH == 'true'
+        run: bash .github/scripts/publish-snapshot.sh v2-SNAPSHOT
         env:
           MAVEN_USERNAME: ${{ secrets.MAVEN_WRITE_USER }}
           MAVEN_TOKEN: ${{ secrets.MAVEN_WRITE_TOKEN }}

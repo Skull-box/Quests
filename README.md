@@ -93,7 +93,7 @@ The **artwork** for Quests is licensed under the Creative Commons Attribution-No
 
 ## Compiler en local (fork Skull-box)
 
-Fork du réseau Skullbox, maintenu avec ses intégrations maison. Prérequis : JDK 21 (le wrapper Gradle est dans le
+Fork du réseau Skullbox, maintenu avec ses intégrations maison. Prérequis : JDK 25 (Minecraft 26.2 ; le wrapper Gradle est dans le
 dépôt). **Un jeton de lecture est nécessaire** : quatre plugins du réseau (`skullboxutils`, `skullboxessentials`,
 `skullboxtreasure`, `skullboxcrystals`) et `boxed-core` sont des SNAPSHOT mobiles (republiés par la CI de leurs
 dépôts) lus sur le dépôt Maven privé de l'org, Reposilite (`https://maven.skullbox.fr`, aucune lecture anonyme). Le
@@ -111,17 +111,17 @@ export MAVEN_TOKEN=JETON_DE_LECTURE
 ./gradlew clean build -Pgitversion=false
 ```
 
-Le jar du plugin est `build/libs/Quests-3.15.2.jar` (`quests-3.15.2.jar`, minuscules, est le jar vide du projet
+Le jar du plugin est `build/libs/Quests-3.16.1.jar` (`quests-3.16.1.jar`, minuscules, est le jar vide du projet
 racine). `-PreleaseVersion=x.y.z` remplace la version de `build.gradle.kts`, et le jar comme `plugin.yml` la portent.
 Sans `-Pgitversion=false`, le build garde le comportement de l'amont : la version est suffixée du hash de commit
-(`Quests-3.15.2-<hash>.jar`).
+(`Quests-3.16.1-<hash>.jar`).
 
 Le type de tâche `nuvotifier_vote` a été retiré du fork : sa dépendance (`com.vexsoftware:NuVotifier`) n'existe plus
 sur aucun dépôt Maven.
 
 ## CI/CD (Skull-box)
 
-Fichiers : `.github/workflows/ci.yml`, `.github/scripts/`, `.releaserc.json`. Runner `blacksmith-2vcpu-ubuntu-2404`, JDK 21.
+Fichiers : `.github/workflows/ci.yml`, `.github/scripts/`, `.releaserc.json`. Runner `blacksmith-2vcpu-ubuntu-2404`, JDK 25.
 
 - **Chaque push et PR** : `./gradlew clean build` (tests compris). Une PR ne publie rien.
 - **Push sur `master`** : release GitHub par [semantic-release](https://github.com/semantic-release/semantic-release)
@@ -131,5 +131,8 @@ Fichiers : `.github/workflows/ci.yml`, `.github/scripts/`, `.releaserc.json`. Ru
 - **Push sur `master`, aussi** : le jar du plugin est publié en SNAPSHOT mobile `com.leonardobishop:quests:3.15.2-SNAPSHOT`
   sur `https://maven.skullbox.fr/snapshots` (pom sans dépendances ; lu par SkullboxUtils). Reposilite ne garde que le
   dernier build.
+- **Push sur `v2`** : le jar du plugin est publié en SNAPSHOT mobile `com.leonardobishop:quests:v2-SNAPSHOT` (même
+  dépôt, même mécanique : `publish-snapshot.sh v2-SNAPSHOT`). Il est distinct du `3.15.2-SNAPSHOT` de `master` (code V1) :
+  SkullboxUtils et SkullboxTreasure (branches `v2`) compilent contre lui.
 - **Toute autre branche** : prérelease GitHub glissante `build-<branche>` (titre = nom de la branche), écrasée à
   chaque push, supprimée avec la branche.
