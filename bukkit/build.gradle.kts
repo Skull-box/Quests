@@ -136,7 +136,7 @@ dependencies {
     // EvenMoreFish
     compileOnlyPlugin("com.oheers.evenmorefish:even-more-fish-api:2.1.2")
     // FancyNpcs
-    compileOnlyPlugin("de.oliver:FancyNpcs:2.5.1")
+    compileOnlyPlugin("de.oliver:FancyNpcs:2.11.0") // API du fork Skull-box/FancyPlugins 2.12.1 (inchangée)
     // IridiumSkyblock TODO fix whenever repo is up
     //compileOnlyPlugin("com.github.Iridium-Development:IridiumSkyblock:master-SNAPSHOT")
     // JetBrains Annotations

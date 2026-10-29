@@ -24,7 +24,9 @@ public final class FancyNpcsInteractTaskType extends InteractTaskType<String> {
     public void onNpcInteract(NpcInteractEvent event) {
         ActionTrigger trigger = event.getInteractionType();
 
-        if (trigger != ActionTrigger.RIGHT_CLICK) {
+        // Clic droit ou gauche : comme modelednpc_*, que ces tâches remplacent depuis le 29 oct. 2026
+        // (sur un modèle ModelEngine, le clic gauche arrive en LEFT_CLICK par l'addon fancynpcs-model).
+        if (trigger != ActionTrigger.RIGHT_CLICK && trigger != ActionTrigger.LEFT_CLICK) {
             return;
         }
 
