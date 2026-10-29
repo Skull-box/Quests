@@ -51,8 +51,8 @@ public class SoundUtils {
      * @param soundString the sound string as formatted by a user in the config, e.g. ENTITY_PLAYER_LEVELUP:2:3
      *                    or namespaced, e.g (minecraft:block.decorated_pot.step):2:3.
      *                    An optional fourth field gives the sound category (a {@link SoundCategory} name, which is
-     *                    the volume slider the player sees), e.g. (skullbox:ui.book):1:0.5:VOICE or
-     *                    ENTITY_PLAYER_LEVELUP:2:3:VOICE. Without it, or if it is not a valid category, the sound
+     *                    the volume slider the player sees), e.g. (skullbox:ui.book):1:0.5:UI or
+     *                    ENTITY_PLAYER_LEVELUP:2:3:UI. Without it, or if it is not a valid category, the sound
      *                    plays in MASTER as before.
      */
     public static void playSoundForPlayer(Player player, String soundString) {

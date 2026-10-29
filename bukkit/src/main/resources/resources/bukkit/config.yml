@@ -82,14 +82,14 @@ options:
     quest-cancel: "Cancel Quest"
   # See https://quests.leonardobishop.com/configuration/basic-options.html#sounds
   # Format: NAME:PITCH:VOLUME[:CATEGORY] or (namespace:id):PITCH:VOLUME[:CATEGORY]. CATEGORY is optional (MASTER
-  # if absent). Skullbox sounds are in the VOICE category (the "Voice/Speech" slider; UI category only exists from 1.21.6).
+  # if absent). Skullbox interface sounds are in the UI category (the "UI" slider; Minecraft 26.2).
   sounds:
-    quest-start: "(skullbox:quest.accept):1:0.55:VOICE"
-    quest-cancel: "(skullbox:ui.cancel):1:0.5:VOICE"
-    quest-complete: "(skullbox:reward.success):1:0.6:VOICE"
+    quest-start: "(skullbox:quest.accept):1:0.55:UI"
+    quest-cancel: "(skullbox:ui.cancel):1:0.5:UI"
+    quest-complete: "(skullbox:reward.success):1:0.6:UI"
     gui:
-      open: "(skullbox:ui.book):1:0.5:VOICE"
-      interact: "(skullbox:ui.click):1:0.35:VOICE"
+      open: "(skullbox:ui.book):1:0.5:UI"
+      interact: "(skullbox:ui.click):1:0.35:UI"
   # Hide locked quests, quests on cooldown and completed (but not repeatable) quests
   gui-hide-locked: false
   # Confirm quest cancellation with a separate menu
