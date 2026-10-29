@@ -19,7 +19,7 @@
 
 ## 💾 Downloads / Building
 The latest release version of Quests can be found [here](https://quests.leonardobishop.com/download.html).
-The latest build of Quests (development version) can be found on [GitHub](https://github.com/LMBishop/Quests/actions).
+The latest build of Quests (development version) can be found on [GitHub](https://github.com/LMBishop/Quests/actions?query=workflow%3A%22Build+plugin%22+event%3Apush+branch%3Amaster).
 
 Alternatively, you can build Quests via Gradle. Release versions of Quests are built using **Gradle**, targeting **Java 17**. You can change the target version in ``build.gradle``.
 * Ensure Java is installed on your machine
@@ -74,7 +74,7 @@ Full documentation can be found at [https://quests.leonardobishop.com/](https://
 Documentation is built directly from this repository, from the `/docs` directory.
 
 ## 💡 Support
-For support please open a [GitHub issue](https://github.com/LMBishop/Quests/issues) or join our [Discord server](https://discord.gg/mQ2RcJC). Please provide information of the issue, any errors that may come up and make sure you are using the latest version of the plugin.
+For support please open a [GitHub issue](https://github.com/LMBishop/Quests/issues) or join our [Discord server](https://discord.gg/SwUPVENQsd). Please provide information of the issue, any errors that may come up and make sure you are using the latest version of the plugin.
 
 #### ⁉️ Issue Tracker
 **This is the preferred method of bug reporting & feature requests**. Please use one of the two templates which are provided. If it is neither a bug report or a feature request and is a question, Discord would be a better place to ask this instead.

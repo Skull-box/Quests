@@ -3,6 +3,7 @@ package com.leonardobishop.quests.bukkit.tasktype.type.dependent;
 import com.leonardobishop.quests.bukkit.BukkitQuestsPlugin;
 import com.leonardobishop.quests.bukkit.tasktype.BukkitTaskType;
 import com.leonardobishop.quests.bukkit.util.TaskUtils;
+import com.leonardobishop.quests.bukkit.util.constraint.TaskConstraintSet;
 import com.leonardobishop.quests.common.player.QPlayer;
 import com.leonardobishop.quests.common.player.questprogressfile.TaskProgress;
 import com.leonardobishop.quests.common.quest.Quest;
@@ -38,7 +39,7 @@ public final class EssentialsMoneyEarnTaskType extends BukkitTaskType {
             return;
         }
 
-        for (TaskUtils.PendingTask pendingTask : TaskUtils.getApplicableTasks(player, qPlayer, this)) {
+        for (TaskUtils.PendingTask pendingTask : TaskUtils.getApplicableTasks(player, qPlayer, this, TaskConstraintSet.ALL)) {
             Quest quest = pendingTask.quest();
             Task task = pendingTask.task();
             TaskProgress taskProgress = pendingTask.taskProgress();
@@ -65,7 +66,7 @@ public final class EssentialsMoneyEarnTaskType extends BukkitTaskType {
 
             int earningsNeeded = (int) task.getConfigValue("amount");
             BigDecimal amount = BigDecimal.valueOf(earningsNeeded);
-            if (newProgress.compareTo(amount) > 0) {
+            if (newProgress.compareTo(amount) >= 0) {
                 super.debug("Marking task as complete", quest.getId(), task.getId(), player.getUniqueId());
                 taskProgress.setCompleted(true);
             }

@@ -24,6 +24,7 @@ public final class DealDamageTaskType extends BukkitTaskType {
 
     private final BukkitQuestsPlugin plugin;
     private final Table<String, String, QuestItem> fixedQuestItemCache = HashBasedTable.create();
+    private final Table<String, String, QuestItem> fixedQuestProjectileItemCache = HashBasedTable.create();
 
     public DealDamageTaskType(BukkitQuestsPlugin plugin) {
         super("dealdamage", TaskUtils.TASK_ATTRIBUTION_STRING, "Deal a certain amount of damage.");
@@ -34,20 +35,21 @@ public final class DealDamageTaskType extends BukkitTaskType {
         super.addConfigValidator(TaskUtils.useEntityListConfigValidator(this, "mob", "mobs"));
         super.addConfigValidator(TaskUtils.useBooleanConfigValidator(this, "allow-only-creatures"));
         super.addConfigValidator(TaskUtils.useItemStackConfigValidator(this, "item"));
+        super.addConfigValidator(TaskUtils.useItemStackConfigValidator(this, "projectile-item"));
         super.addConfigValidator(TaskUtils.useIntegerConfigValidator(this, "data"));
         super.addConfigValidator(TaskUtils.useBooleanConfigValidator(this, "exact-match"));
+        super.addConfigValidator(TaskUtils.useBooleanConfigValidator(this, "projectile-item-exact-match"));
     }
 
     @Override
     public void onReady() {
         fixedQuestItemCache.clear();
+        fixedQuestProjectileItemCache.clear();
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onEntityDamage(EntityDamageEvent event) {
-        Entity entity = event.getEntity();
         Player player = plugin.getVersionSpecificHandler().getDamager(event);
-
         if (player == null || player.hasMetadata("NPC")) {
             return;
         }
@@ -57,9 +59,15 @@ public final class DealDamageTaskType extends BukkitTaskType {
             return;
         }
 
+        Entity entity = event.getEntity();
         if (!(entity instanceof Damageable damageable)) {
             return;
         }
+
+        Entity directSource = plugin.getVersionSpecificHandler().getDirectSource(event);
+        ItemStack bowItem = directSource != null ? plugin.getProjectile2ItemCache().getItem(directSource) : null;
+        ItemStack item = bowItem != null ? bowItem : plugin.getVersionSpecificHandler().getItemInMainHand(player);
+        ItemStack projectileItem = directSource != null ? plugin.getVersionSpecificHandler().getAbstractArrowItem(directSource) : null;
 
         // Clamp entity damage as getDamage() returns Float.MAX_VALUE for killing a parrot with a cookie
         // https://github.com/LMBishop/Quests/issues/753
@@ -87,7 +95,6 @@ public final class DealDamageTaskType extends BukkitTaskType {
             }
 
             if (task.hasConfigKey("item")) {
-                ItemStack item = plugin.getVersionSpecificHandler().getItemInMainHand(player);
                 if (item == null) {
                     super.debug("Specific item is required, player has no item in hand; continuing...", quest.getId(), task.getId(), player.getUniqueId());
                     continue;
@@ -108,6 +115,30 @@ public final class DealDamageTaskType extends BukkitTaskType {
                     continue;
                 } else {
                     super.debug("Item matches required item", quest.getId(), task.getId(), player.getUniqueId());
+                }
+            }
+
+            if (task.hasConfigKey("projectile-item")) {
+                if (projectileItem == null) {
+                    super.debug("Specific projectile item is required, no projectile item detected; continuing...", quest.getId(), task.getId(), player.getUniqueId());
+                    continue;
+                }
+
+                super.debug("Specific projectile item is required; projectile item is of type '" + projectileItem.getType() + "'", quest.getId(), task.getId(), player.getUniqueId());
+
+                QuestItem qi;
+                if ((qi = fixedQuestProjectileItemCache.get(quest.getId(), task.getId())) == null) {
+                    QuestItem fetchedItem = TaskUtils.getConfigQuestItem(task, "projectile-item", "data");
+                    fixedQuestProjectileItemCache.put(quest.getId(), task.getId(), fetchedItem);
+                    qi = fetchedItem;
+                }
+
+                boolean exactMatch = TaskUtils.getConfigBoolean(task, "projectile-item-exact-match", true);
+                if (!qi.compareItemStack(projectileItem, exactMatch)) {
+                    super.debug("Projectile item does not match required item, continuing...", quest.getId(), task.getId(), player.getUniqueId());
+                    continue;
+                } else {
+                    super.debug("Projectile item matches required item", quest.getId(), task.getId(), player.getUniqueId());
                 }
             }
 

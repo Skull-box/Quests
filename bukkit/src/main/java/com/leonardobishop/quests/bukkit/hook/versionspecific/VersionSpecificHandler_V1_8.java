@@ -1,5 +1,6 @@
 package com.leonardobishop.quests.bukkit.hook.versionspecific;
 
+import com.leonardobishop.quests.common.versioning.Version;
 import org.bukkit.Material;
 import org.bukkit.block.Biome;
 import org.bukkit.block.data.BlockData;
@@ -19,16 +20,17 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.projectiles.ProjectileSource;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-import java.util.HashMap;
 import java.util.List;
 
-public class VersionSpecificHandler8 implements VersionSpecificHandler {
+@NullMarked
+public class VersionSpecificHandler_V1_8 implements VersionSpecificHandler {
 
     @Override
-    public int getMinecraftVersion() {
-        return 8;
+    public Version getMinecraftVersion() {
+        return Version.V1_8;
     }
 
     @Override
@@ -41,7 +43,12 @@ public class VersionSpecificHandler8 implements VersionSpecificHandler {
         return false;
     }
 
-    @SuppressWarnings("deprecation")
+    @Override
+    public boolean isPlayerOnCamelHusk(Player player) {
+        return false;
+    }
+
+    @SuppressWarnings({"deprecation", "removal"})
     @Override
     public boolean isPlayerOnDonkey(Player player) {
         return player.getVehicle() instanceof Horse horse && horse.getVariant() == Horse.Variant.DONKEY;
@@ -52,7 +59,7 @@ public class VersionSpecificHandler8 implements VersionSpecificHandler {
         return false;
     }
 
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings({"deprecation", "removal"})
     @Override
     public boolean isPlayerOnHorse(Player player) {
         return player.getVehicle() instanceof Horse horse && horse.getVariant() == Horse.Variant.HORSE;
@@ -63,13 +70,18 @@ public class VersionSpecificHandler8 implements VersionSpecificHandler {
         return false;
     }
 
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings({"deprecation", "removal"})
     @Override
     public boolean isPlayerOnMule(Player player) {
         return player.getVehicle() instanceof Horse horse && horse.getVariant() == Horse.Variant.MULE;
     }
 
-    @SuppressWarnings("deprecation")
+    @Override
+    public boolean isPlayerOnNautilus(Player player) {
+        return false;
+    }
+
+    @SuppressWarnings({"deprecation", "removal"})
     @Override
     public boolean isPlayerOnSkeletonHorse(Player player) {
         return player.getVehicle() instanceof Horse horse && horse.getVariant() == Horse.Variant.SKELETON_HORSE;
@@ -80,10 +92,15 @@ public class VersionSpecificHandler8 implements VersionSpecificHandler {
         return false;
     }
 
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings({"deprecation", "removal"})
     @Override
     public boolean isPlayerOnZombieHorse(Player player) {
         return player.getVehicle() instanceof Horse horse && horse.getVariant() == Horse.Variant.UNDEAD_HORSE;
+    }
+
+    @Override
+    public boolean isPlayerOnZombieNautilus(Player player) {
+        return false;
     }
 
     @Override
@@ -97,28 +114,18 @@ public class VersionSpecificHandler8 implements VersionSpecificHandler {
     }
 
     @Override
-    public int getAvailableSpace(Player player, ItemStack newItemStack) {
-        int availableSpace = 0;
-        PlayerInventory inventory = player.getInventory();
-        HashMap<Integer, ? extends ItemStack> itemStacksWithSameMaterial = inventory.all(newItemStack.getType());
-        for (ItemStack existingItemStack : itemStacksWithSameMaterial.values()) {
-            if (newItemStack.isSimilar(existingItemStack)) {
-                availableSpace += (newItemStack.getMaxStackSize() - existingItemStack.getAmount());
-            }
-        }
-
-        for (ItemStack existingItemStack : inventory.getContents()) {
-            if (existingItemStack == null) {
-                availableSpace += newItemStack.getMaxStackSize();
-            }
-        }
-
-        return availableSpace;
+    public @Nullable ItemStack[] getStorageContents(PlayerInventory inventory) {
+        return inventory.getContents();
     }
 
     @Override
     public boolean isHotbarMoveAndReaddSupported() {
         return true;
+    }
+
+    @Override
+    public boolean isCraftingControlDropAllSupported() {
+        return false;
     }
 
     @Override
@@ -134,7 +141,7 @@ public class VersionSpecificHandler8 implements VersionSpecificHandler {
 
     @SuppressWarnings("deprecation")
     @Override
-    public ItemStack getItemInEquipmentSlot(PlayerInventory inventory, EquipmentSlot slot) {
+    public @Nullable ItemStack getItemInEquipmentSlot(PlayerInventory inventory, EquipmentSlot slot) {
         return switch (slot) {
             case CHEST -> inventory.getChestplate();
             case FEET -> inventory.getBoots();
@@ -153,7 +160,7 @@ public class VersionSpecificHandler8 implements VersionSpecificHandler {
     }
 
     @Override
-    public EquipmentSlot getHand(PlayerInteractEvent event) {
+    public @Nullable EquipmentSlot getHand(PlayerInteractEvent event) {
         return EquipmentSlot.HAND;
     }
 
@@ -163,12 +170,12 @@ public class VersionSpecificHandler8 implements VersionSpecificHandler {
     }
 
     @Override
-    public ItemStack[] getSmithItems(SmithItemEvent event) {
+    public @Nullable ItemStack[] getSmithItems(SmithItemEvent event) {
         return new ItemStack[0];
     }
 
     @Override
-    public String getSmithMode(SmithItemEvent event) {
+    public @Nullable String getSmithMode(SmithItemEvent event) {
         return null;
     }
 
@@ -227,6 +234,11 @@ public class VersionSpecificHandler8 implements VersionSpecificHandler {
     }
 
     @Override
+    public @Nullable Entity getDirectSource(@Nullable EntityDamageEvent lastDamageCause) {
+        return null;
+    }
+
+    @Override
     public boolean isCake(Material type) {
         return type == Material.CAKE;
     }
@@ -235,5 +247,10 @@ public class VersionSpecificHandler8 implements VersionSpecificHandler {
     @Override
     public String getBiomeKey(Biome biome) {
         return biome.name();
+    }
+
+    @Override
+    public @Nullable ItemStack getAbstractArrowItem(Entity entity) {
+        return null;
     }
 }

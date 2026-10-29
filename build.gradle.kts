@@ -1,5 +1,6 @@
 import xyz.wagyourtail.jvmdg.gradle.task.DowngradeJar
 import xyz.wagyourtail.jvmdg.gradle.task.ShadeJar
+import org.gradle.jvm.toolchain.JavaLanguageVersion
 
 plugins {
     java
@@ -13,12 +14,12 @@ allprojects {
     group = "com.leonardobishop"
     // La CI injecte la version de release avec -PreleaseVersion=x.y.z (build.sh) et neutralise le suffixe du hash de
     // commit (allJar) avec -Pgitversion=false : le jar et plugin.yml portent alors exactement cette version.
-    // Sans propriété : 3.15.2 (suffixé du hash, comme en amont).
-    version = findProperty("releaseVersion") ?: "3.15.2"
+    // Sans propriété : 3.16.1 (suffixé du hash, comme en amont).
+    version = findProperty("releaseVersion") ?: "3.16.1"
 
     java {
         toolchain {
-            languageVersion = JavaLanguageVersion.of(21)
+            languageVersion = JavaLanguageVersion.of(25)
         }
     }
 }
@@ -27,7 +28,7 @@ subprojects {
     tasks.withType<JavaCompile> {
         options.compilerArgs = listOf("-Xlint:deprecation", "-Xlint:unchecked")
         options.encoding = Charsets.UTF_8.name()
-        options.release = 21
+        options.release = 25
     }
 
     tasks.withType<Javadoc> {
@@ -92,7 +93,10 @@ val javaVersions = listOf(
     JavaVersion.VERSION_16,
 
     // from 1.18 to 1.20.4
-    JavaVersion.VERSION_17
+    JavaVersion.VERSION_17,
+
+    // from 1.20.5 to 1.21.11
+    JavaVersion.VERSION_21
 )
 
 for (javaVersion in javaVersions) {

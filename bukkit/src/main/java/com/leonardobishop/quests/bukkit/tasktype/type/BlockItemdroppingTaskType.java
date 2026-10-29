@@ -36,6 +36,7 @@ public final class BlockItemdroppingTaskType extends BukkitTaskType {
         super.addConfigValidator(TaskUtils.useIntegerConfigValidator(this, "data"));
         super.addConfigValidator(TaskUtils.useBooleanConfigValidator(this, "exact-match"));
         super.addConfigValidator(TaskUtils.useMaterialListConfigValidator(this, TaskUtils.MaterialListConfigValidatorMode.BLOCK, "block", "blocks"));
+        super.addConfigValidator(TaskUtils.useBooleanConfigValidator(this, "count-drops"));
     }
 
     @Override
@@ -56,14 +57,18 @@ public final class BlockItemdroppingTaskType extends BukkitTaskType {
         }
 
         BlockState state = event.getBlockState();
-
         List<Item> drops = event.getItems();
-        for (Item drop : drops) {
-            handle(player, qPlayer, state, drop.getItemStack());
+
+        if (drops.isEmpty()) {
+            handle(player, qPlayer, state, null, 0);
+        }
+
+        for (int i = 0; i < drops.size(); i++) {
+            handle(player, qPlayer, state, drops.get(i).getItemStack(), i);
         }
     }
 
-    private void handle(Player player, QPlayer qPlayer, BlockState state, ItemStack item) {
+    private void handle(Player player, QPlayer qPlayer, BlockState state, ItemStack item, int i) {
         for (TaskUtils.PendingTask pendingTask : TaskUtils.getApplicableTasks(player, qPlayer, this, TaskConstraintSet.ALL)) {
             Quest quest = pendingTask.quest();
             Task task = pendingTask.task();
@@ -71,28 +76,41 @@ public final class BlockItemdroppingTaskType extends BukkitTaskType {
 
             super.debug("Player dropped item from block", quest.getId(), task.getId(), player.getUniqueId());
 
-            if (task.hasConfigKey("item")) {
-                if (item == null) {
-                    super.debug("Specific item is required, dropped item is null; continuing...", quest.getId(), task.getId(), player.getUniqueId());
+            Boolean countDrops = (Boolean) task.getConfigValue("count-drops");
+            final int amountToIncrease;
+
+            if (Boolean.TRUE.equals(countDrops)) {
+                if (i != 0) {
                     continue;
                 }
 
-                super.debug("Specific item is required; dropped item is of type '" + item.getType() + "'", quest.getId(), task.getId(), player.getUniqueId());
+                amountToIncrease = 1;
+            } else {
+                if (task.hasConfigKey("item")) {
+                    if (item == null) {
+                        super.debug("Specific item is required, dropped item is null; continuing...", quest.getId(), task.getId(), player.getUniqueId());
+                        continue;
+                    }
 
-                QuestItem qi;
-                if ((qi = fixedQuestItemCache.get(quest.getId(), task.getId())) == null) {
-                    QuestItem fetchedItem = TaskUtils.getConfigQuestItem(task, "item", "data");
-                    fixedQuestItemCache.put(quest.getId(), task.getId(), fetchedItem);
-                    qi = fetchedItem;
+                    super.debug("Specific item is required; dropped item is of type '" + item.getType() + "'", quest.getId(), task.getId(), player.getUniqueId());
+
+                    QuestItem qi;
+                    if ((qi = fixedQuestItemCache.get(quest.getId(), task.getId())) == null) {
+                        QuestItem fetchedItem = TaskUtils.getConfigQuestItem(task, "item", "data");
+                        fixedQuestItemCache.put(quest.getId(), task.getId(), fetchedItem);
+                        qi = fetchedItem;
+                    }
+
+                    boolean exactMatch = TaskUtils.getConfigBoolean(task, "exact-match", true);
+                    if (!qi.compareItemStack(item, exactMatch)) {
+                        super.debug("Item does not match required item, continuing...", quest.getId(), task.getId(), player.getUniqueId());
+                        continue;
+                    } else {
+                        super.debug("Item matches required item", quest.getId(), task.getId(), player.getUniqueId());
+                    }
                 }
 
-                boolean exactMatch = TaskUtils.getConfigBoolean(task, "exact-match", true);
-                if (!qi.compareItemStack(item, exactMatch)) {
-                    super.debug("Item does not match required item, continuing...", quest.getId(), task.getId(), player.getUniqueId());
-                    continue;
-                } else {
-                    super.debug("Item matches required item", quest.getId(), task.getId(), player.getUniqueId());
-                }
+                amountToIncrease = item != null ? item.getAmount() : 0;
             }
 
             if (!TaskUtils.matchBlock(this, pendingTask, state, player.getUniqueId())) {
@@ -100,7 +118,7 @@ public final class BlockItemdroppingTaskType extends BukkitTaskType {
                 continue;
             }
 
-            int progress = TaskUtils.incrementIntegerTaskProgress(taskProgress);
+            int progress = TaskUtils.incrementIntegerTaskProgress(taskProgress, amountToIncrease);
             super.debug("Incrementing task progress (now " + progress + ")", quest.getId(), task.getId(), player.getUniqueId());
 
             int amount = (int) task.getConfigValue("amount");

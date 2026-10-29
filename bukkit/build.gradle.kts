@@ -1,5 +1,7 @@
+import com.github.jengelman.gradle.plugins.shadow.transformers.ServiceFileTransformer
+
 plugins {
-    id("io.github.goooler.shadow")
+    id("com.gradleup.shadow")
 }
 
 tasks.build {
@@ -42,8 +44,8 @@ repositories {
     maven("https://repo.auxilor.io/repository/maven-public/")
     // EssentialsX
     maven("https://repo.essentialsx.net/releases/")
-    // EvenMoreFish TODO fix when they stop publishing 20 MB fat jar (it breaks annotations and not limited to)
-    //maven("https://repo.codemc.io/repository/EvenMoreFish/")
+    // EvenMoreFish
+    maven("https://repo.codemc.io/repository/EvenMoreFish/")
     // FancyNpcs
     maven("https://repo.fancyinnovations.com/releases")
     // MMOItems, MythicLib
@@ -56,18 +58,24 @@ repositories {
     maven("https://repo.oraxen.com/releases")
     // PlaceholderAPI
     maven("https://repo.extendedclip.com/releases")
-    // SCore, ShopGUIPlus, Slimefun4, Vault, ZShop
-    maven("https://jitpack.io/")
+    // SCore, ShopGUIPlus, Slimefun4, Vault, ZShop, ModeledNPCs
+    maven("https://jitpack.io/") {
+        content {
+            includeGroup("com.github.Ssomar-Developement")
+            includeGroup("com.github.brcdev-minecraft")
+            includeGroup("com.github.Slimefun")
+            includeGroup("com.github.MilkBowl")
+            includeGroup("com.github.el211")
+        }
+    }
     // PlayerPoints
     maven("https://repo.rosewooddev.io/repository/public/")
-    // SuperiorSkyblock2
+    // SuperiorSkyblock2, WildStacker
     maven("https://repo.bg-software.com/repository/api/")
     // uSkyBlock TODO fix whenever repo is up
     //maven("https://raw.githubusercontent.com/uskyblock/uskyblock-repo/master/")
     // VotingPlugin
     maven("https://nexus.bencodez.com/repository/maven-public/")
-    // WildStacker
-    maven("https://repo.bg-software.com/repository/api/")
     // ZNPCsPlus
     maven("https://repo.pyr.lol/snapshots")
 
@@ -101,7 +109,7 @@ dependencies {
     compileOnlyProject(":common")
 
     // Paper
-    compileOnlyServer("io.papermc.paper:paper-api:1.21.8-R0.1-SNAPSHOT")
+    compileOnlyServer("io.papermc.paper:paper-api:26.1.1.build.29-alpha")
 
     // ASkyBlock
     compileOnlyPlugin("com.wasteofplastic:askyblock:3.0.9.4")
@@ -125,8 +133,8 @@ dependencies {
     compileOnlyPlugin("com.willfp:libreforge:4.21.1")
     // EssentialsX
     compileOnlyPlugin("net.essentialsx:EssentialsX:2.19.7")
-    // EvenMoreFish TODO fix when they stop publishing 20 MB fat jar (it breaks annotations and not limited to)
-    //compileOnlyPlugin("com.oheers.evenmorefish:even-more-fish-plugin:2.0.7")
+    // EvenMoreFish
+    compileOnlyPlugin("com.oheers.evenmorefish:even-more-fish-api:2.1.2")
     // FancyNpcs
     compileOnlyPlugin("de.oliver:FancyNpcs:2.5.1")
     // IridiumSkyblock TODO fix whenever repo is up
@@ -160,7 +168,7 @@ dependencies {
     // uSkyBlock TODO fix whenever repo is up
     //compileOnlyPlugin("ovh.uskyblock:uSkyBlock-API:2.8.9")
     // Vault
-    compileOnlyPlugin("com.github.MilkBowl:VaultAPI:1.7.1")
+    compileOnlyPlugin("com.github.MilkBowl:VaultAPI:1.7")
     // VotingPlugin
     compileOnlyPlugin("com.bencodez:votingplugin:6.18.4")
     // WildStacker
@@ -189,15 +197,15 @@ dependencies {
     // bStats
     implementation("org.bstats:bstats-bukkit-lite:1.8")
     // gson // TODO implement custom metrics without gson
-    implementation("com.google.code.gson:gson:2.13.1")
+    implementation("com.google.code.gson:gson:2.13.2")
     // HikariCP
-    implementation("com.zaxxer:HikariCP:6.3.0")
+    implementation("com.zaxxer:HikariCP:7.0.2")
     // slf4j
-    implementation("org.slf4j:slf4j-nop:1.7.36")
+    implementation("org.slf4j:slf4j-nop:2.0.17")
     // hppc
     implementation("com.carrotsearch:hppc:0.10.0")
     // bungeecord-chat
-    implementation("net.md-5:bungeecord-chat:1.21-R0.3") { isTransitive = false }
+    implementation("net.md-5:bungeecord-chat:1.21-R0.4") { isTransitive = false }
 }
 
 tasks.shadowJar {
@@ -216,6 +224,9 @@ tasks.shadowJar {
         exclude(dependency("com.zaxxer:.*:.*"))
         exclude(dependency("org.slf4j:.*:.*"))
     }
+
+    // Required for proper relocated SLF4J provider detection
+    transform(ServiceFileTransformer::class.java)
 
     archiveClassifier.set(null as String?)
 }

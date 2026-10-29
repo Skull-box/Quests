@@ -1,18 +1,20 @@
 package com.leonardobishop.quests.bukkit.hook.versionspecific;
 
+import com.leonardobishop.quests.common.versioning.Version;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Strider;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.SmithItemEvent;
-import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
-public class VersionSpecificHandler16 extends VersionSpecificHandler14 implements VersionSpecificHandler {
+@NullMarked
+public class VersionSpecificHandler_V1_16 extends VersionSpecificHandler_V1_15_2 {
 
     @Override
-    public int getMinecraftVersion() {
-        return 16;
+    public Version getMinecraftVersion() {
+        return Version.V1_16;
     }
 
     @Override
@@ -26,18 +28,8 @@ public class VersionSpecificHandler16 extends VersionSpecificHandler14 implement
     }
 
     @Override
-    public boolean isOffHandEmpty(Player player) {
-        return player.getInventory().getItemInOffHand().getAmount() == 0;
-    }
-
-    @Override
-    public ItemStack getItemInEquipmentSlot(PlayerInventory inventory, EquipmentSlot slot) {
-        return inventory.getItem(slot);
-    }
-
-    @Override
-    public ItemStack[] getSmithItems(SmithItemEvent event) {
-        return new ItemStack[]{
+    public @Nullable ItemStack[] getSmithItems(SmithItemEvent event) {
+        return new @Nullable ItemStack[]{
                 event.getInventory().getInputEquipment(),
                 event.getInventory().getInputMineral()
         };

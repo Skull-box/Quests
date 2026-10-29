@@ -37,15 +37,6 @@ import com.leonardobishop.quests.bukkit.hook.title.Title_Nothing;
 import com.leonardobishop.quests.bukkit.hook.vault.AbstractVaultHook;
 import com.leonardobishop.quests.bukkit.hook.vault.VaultHook;
 import com.leonardobishop.quests.bukkit.hook.versionspecific.VersionSpecificHandler;
-import com.leonardobishop.quests.bukkit.hook.versionspecific.VersionSpecificHandler11;
-import com.leonardobishop.quests.bukkit.hook.versionspecific.VersionSpecificHandler12;
-import com.leonardobishop.quests.bukkit.hook.versionspecific.VersionSpecificHandler14;
-import com.leonardobishop.quests.bukkit.hook.versionspecific.VersionSpecificHandler16;
-import com.leonardobishop.quests.bukkit.hook.versionspecific.VersionSpecificHandler17;
-import com.leonardobishop.quests.bukkit.hook.versionspecific.VersionSpecificHandler20;
-import com.leonardobishop.quests.bukkit.hook.versionspecific.VersionSpecificHandler21;
-import com.leonardobishop.quests.bukkit.hook.versionspecific.VersionSpecificHandler8;
-import com.leonardobishop.quests.bukkit.hook.versionspecific.VersionSpecificHandler9;
 import com.leonardobishop.quests.bukkit.hook.wildstacker.AbstractWildStackerHook;
 import com.leonardobishop.quests.bukkit.hook.wildstacker.WildStackerHook;
 import com.leonardobishop.quests.bukkit.item.ParsedQuestItem;
@@ -68,6 +59,8 @@ import com.leonardobishop.quests.bukkit.tasktype.BukkitTaskTypeManager;
 import com.leonardobishop.quests.bukkit.tasktype.type.AnvilTaskType;
 import com.leonardobishop.quests.bukkit.tasktype.type.BarteringTaskType;
 import com.leonardobishop.quests.bukkit.tasktype.type.BlockItemdroppingTaskType;
+import com.leonardobishop.quests.bukkit.tasktype.type.BlockLootdispensingTaskType;
+import com.leonardobishop.quests.bukkit.tasktype.type.BlockchangingTaskType;
 import com.leonardobishop.quests.bukkit.tasktype.type.BlockfertilizingTaskType;
 import com.leonardobishop.quests.bukkit.tasktype.type.BlockshearingTaskType;
 import com.leonardobishop.quests.bukkit.tasktype.type.BreedingTaskType;
@@ -113,6 +106,7 @@ import com.leonardobishop.quests.bukkit.tasktype.type.dependent.*;
 import com.leonardobishop.quests.bukkit.util.CompatUtils;
 import com.leonardobishop.quests.bukkit.util.FormatUtils;
 import com.leonardobishop.quests.bukkit.util.LogHistory;
+import com.leonardobishop.quests.bukkit.util.Projectile2ItemCache;
 import com.leonardobishop.quests.common.config.ConfigProblem;
 import com.leonardobishop.quests.common.config.ConfigProblemDescriptions;
 import com.leonardobishop.quests.common.config.QuestsConfig;
@@ -127,6 +121,7 @@ import com.leonardobishop.quests.common.storage.StorageProvider;
 import com.leonardobishop.quests.common.tasktype.TaskType;
 import com.leonardobishop.quests.common.tasktype.TaskTypeManager;
 import com.leonardobishop.quests.common.updater.Updater;
+import com.leonardobishop.quests.common.versioning.Version;
 import com.mojang.authlib.GameProfile;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -163,6 +158,7 @@ import java.util.regex.Pattern;
 public class BukkitQuestsPlugin extends JavaPlugin implements Quests {
 
     private QuestsLogger questsLogger;
+    private Version serverVersion;
     private QuestManager questManager;
     private TaskTypeManager taskTypeManager;
     private QPlayerManager qPlayerManager;
@@ -192,6 +188,7 @@ public class BukkitQuestsPlugin extends JavaPlugin implements Quests {
     private QuestsBossBar bossBarHandle;
     private QuestsActionBar actionBarHandle;
     private VersionSpecificHandler versionSpecificHandler;
+    private Projectile2ItemCache projectile2ItemCache;
 
     private LogHistory logHistory;
     private WrappedTask questAutoSaveTask;
@@ -201,6 +198,11 @@ public class BukkitQuestsPlugin extends JavaPlugin implements Quests {
     @Override
     public @NotNull QuestsLogger getQuestsLogger() {
         return questsLogger;
+    }
+
+    @Override
+    public @NotNull Version getServerVersion() {
+        return serverVersion;
     }
 
     @Override
@@ -250,9 +252,29 @@ public class BukkitQuestsPlugin extends JavaPlugin implements Quests {
 
     @Override
     public void onEnable() {
-        // Initial module initialization
+        // Initialize logger
         this.questsLogger = new BukkitQuestsLogger(this);
         this.logHistory = new LogHistory(true);
+
+        // Resolve server version
+        Version serverVersion;
+        try {
+            serverVersion = Version.fromString(Bukkit.getBukkitVersion());
+            this.questsLogger.info("Your server is running version " + serverVersion);
+        } catch (final IllegalArgumentException e) {
+            // all server versions supported by Quests fulfill this format,
+            // so we assume that some future version can possibly break it,
+            // and we want to load the latest and not the oldest handler
+            serverVersion = Version.UNKNOWN;
+            this.questsLogger.warning("Failed to resolve server version - some features may not work! (" + e.getMessage() + ")");
+        }
+
+        // Set the latest supported version specific handler
+        this.serverVersion = serverVersion;
+        this.versionSpecificHandler = VersionSpecificHandler.getImplementation(serverVersion);
+        this.questsLogger.info("Using " + this.versionSpecificHandler.getClass().getSimpleName() + " for version compatibility!");
+
+        // Initial module initialization
         this.generateConfigurations();
         this.questsConfig = new BukkitQuestsConfig(new File(super.getDataFolder() + File.separator + "config.yml"));
         this.questManager = new QuestManager();
@@ -291,20 +313,6 @@ public class BukkitQuestsPlugin extends JavaPlugin implements Quests {
             e.printStackTrace();
         }
 
-        // Setup version specific compatibility layers
-        int version;
-        try {
-            version = this.getServerVersion();
-            this.questsLogger.info("Your server is running version 1." + version);
-        } catch (final IllegalArgumentException e) {
-            // all server supported versions by Quests fulfill this format,
-            // so we assume that some future version can possibly break it,
-            // and we want to load the latest and not the oldest handler
-            version = Integer.MAX_VALUE;
-
-            this.questsLogger.warning("Failed to resolve server version - some features may not work! (" + e.getMessage() + ")");
-        }
-
         // (titles)
         this.setTitleHandle();
 
@@ -320,21 +328,9 @@ public class BukkitQuestsPlugin extends JavaPlugin implements Quests {
         // (skulls)
         this.setSkullGetter();
 
-        // (version specific handler)
-        if (version <= 8) {
-            this.versionSpecificHandler = new VersionSpecificHandler8();
-        } else {
-            this.versionSpecificHandler = switch (version) {
-                case 9, 10 -> new VersionSpecificHandler9();
-                case 11 -> new VersionSpecificHandler11();
-                case 12, 13 -> new VersionSpecificHandler12();
-                case 14, 15 -> new VersionSpecificHandler14();
-                case 16 -> new VersionSpecificHandler16();
-                case 17, 18, 19 -> new VersionSpecificHandler17();
-                case 20 -> new VersionSpecificHandler20();
-                default -> new VersionSpecificHandler21();
-            };
-        }
+        // Instantiate Projectile to ItemStack cache
+        this.projectile2ItemCache = new Projectile2ItemCache();
+        this.projectile2ItemCache.registerEvents(this);
 
         // Set item getter to be used by Quests config
         this.questsConfig.setItemGetter(this.itemGetter);
@@ -449,6 +445,8 @@ public class BukkitQuestsPlugin extends JavaPlugin implements Quests {
             // Register task types with class/method compatibility requirement
             taskTypeManager.registerTaskType(() -> new BarteringTaskType(this), () -> CompatUtils.classExists("org.bukkit.event.entity.PiglinBarterEvent"));
             taskTypeManager.registerTaskType(() -> new BlockItemdroppingTaskType(this), () -> CompatUtils.classExists("org.bukkit.event.block.BlockDropItemEvent"));
+            taskTypeManager.registerTaskType(() -> new BlockLootdispensingTaskType(this), () -> CompatUtils.classExists("org.bukkit.event.block.BlockDispenseLootEvent"));
+            taskTypeManager.registerTaskType(() -> new BlockchangingTaskType(this), () -> CompatUtils.classWithMethodExists("org.bukkit.event.entity.EntityChangeBlockEvent", "getBlockData"));
             taskTypeManager.registerTaskType(() -> new BlockfertilizingTaskType(this), () -> CompatUtils.classExists("org.bukkit.event.block.BlockFertilizeEvent"));
             taskTypeManager.registerTaskType(() -> new BlockshearingTaskType(this), () -> CompatUtils.classExists("io.papermc.paper.event.block.PlayerShearBlockEvent"));
             taskTypeManager.registerTaskType(() -> new BrewingTaskType(this), () -> CompatUtils.classWithMethodExists("org.bukkit.event.inventory.BrewEvent", "getResults"));
@@ -477,8 +475,8 @@ public class BukkitQuestsPlugin extends JavaPlugin implements Quests {
             taskTypeManager.registerTaskType(() -> new EcoMobsKillingTaskType(this), () -> CompatUtils.isPluginEnabled("EcoMobs"));
             taskTypeManager.registerTaskType(() -> new EssentialsBalanceTaskType(this), () -> CompatUtils.isPluginEnabled("Essentials"));
             taskTypeManager.registerTaskType(() -> new EssentialsMoneyEarnTaskType(this), () -> CompatUtils.isPluginEnabled("Essentials"));
-            taskTypeManager.registerTaskType(() -> new EvenMoreFishFishingTaskType(this), () -> CompatUtils.isPluginEnabled("EvenMoreFish")); // not tested
-            taskTypeManager.registerTaskType(() -> new EvenMoreFishHuntingTaskType(this), () -> CompatUtils.isPluginEnabled("EvenMoreFish")); // not tested
+            taskTypeManager.registerTaskType(() -> new EvenMoreFishFishingTaskType(this), () -> CompatUtils.isPluginEnabled("EvenMoreFish") && CompatUtils.classExists("com.oheers.fish.api.events.EMFFishCaughtEvent")); // not tested
+            taskTypeManager.registerTaskType(() -> new EvenMoreFishHuntingTaskType(this), () -> CompatUtils.isPluginEnabled("EvenMoreFish") && CompatUtils.classExists("com.oheers.fish.api.events.EMFFishHuntEvent")); // not tested
             taskTypeManager.registerTaskType(() -> new FabledSkyBlockLevelTaskType(this), () -> CompatUtils.isPluginEnabled("FabledSkyBlock")); // not tested
             taskTypeManager.registerTaskType(() -> new FancyNpcsDeliverTaskType(this), () -> CompatUtils.isPluginEnabled("FancyNpcs"));
             taskTypeManager.registerTaskType(() -> new FancyNpcsInteractTaskType(this), () -> CompatUtils.isPluginEnabled("FancyNpcs"));
@@ -558,28 +556,6 @@ public class BukkitQuestsPlugin extends JavaPlugin implements Quests {
                 qPlayerManager.loadPlayer(player.getUniqueId());
             }
         });
-    }
-
-    /**
-     * Gets the server minor version.
-     *
-     * @return the server minor version
-     * @throws IllegalArgumentException with message set to the bukkit version if it could not be parsed successfully.
-     */
-    private int getServerVersion() throws IllegalArgumentException {
-        final String bukkitVersion = this.getServer().getBukkitVersion();
-
-        final String[] bukkitVersionParts = bukkitVersion.split("\\.", 3);
-        if (bukkitVersionParts.length < 2) {
-            throw new IllegalArgumentException(bukkitVersion, new ArrayIndexOutOfBoundsException(bukkitVersionParts.length));
-        }
-
-        final String minorVersionPart = bukkitVersionParts[1].split("-")[0];
-        try {
-            return Integer.parseInt(minorVersionPart);
-        } catch (final NumberFormatException e) {
-            throw new IllegalArgumentException(bukkitVersion, e);
-        }
     }
 
     /**
@@ -964,6 +940,10 @@ public class BukkitQuestsPlugin extends JavaPlugin implements Quests {
 
     public VersionSpecificHandler getVersionSpecificHandler() {
         return versionSpecificHandler;
+    }
+
+    public Projectile2ItemCache getProjectile2ItemCache() {
+        return projectile2ItemCache;
     }
 
     public QuestItemRegistry getQuestItemRegistry() {
