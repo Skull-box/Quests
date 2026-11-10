@@ -1,6 +1,7 @@
 package com.leonardobishop.quests.bukkit.util;
 
 import com.leonardobishop.quests.bukkit.BukkitQuestsPlugin;
+import com.leonardobishop.quests.bukkit.api.event.PlayerQuestProgressEvent;
 import com.leonardobishop.quests.bukkit.item.ParsedQuestItem;
 import com.leonardobishop.quests.bukkit.item.QuestItem;
 import com.leonardobishop.quests.bukkit.menu.itemstack.QItemStack;
@@ -186,6 +187,11 @@ public class TaskUtils {
 
 	public static void sendTrackAdvancement(Player player, Quest quest, Task task, PendingTask pendingTask, Number amount) {
         TaskProgress taskProgress = pendingTask.taskProgress();
+
+        if (amount != null) {
+            plugin.getServer().getPluginManager().callEvent(new PlayerQuestProgressEvent(
+                    player, quest, task, pendingTask.questProgress(), taskProgress, amount));
+        }
 
         boolean useActionBar = plugin.getConfig().getBoolean("options.actionbar.progress", false)
                 || (taskProgress.isCompleted() && plugin.getConfig().getBoolean("options.actionbar.complete", false));
